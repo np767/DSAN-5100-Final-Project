@@ -1,0 +1,206 @@
+```{r}
+library(dplyr)
+library(tidyverse)
+library(purrr)
+```
+
+Load in all relevant economic data
+
+```{r}
+voter_turnout_1980_to_2022 <-  read.csv("data/1980-2022_General_Election.csv")
+voter_turnout_2024 <-  read.csv("data/Turnout_2024G_v0.3.csv")
+
+
+```
+
+removing the "united states" row
+
+```{r}
+voter_turnout_1980_to_2022 <- voter_turnout_1980_to_2022 %>%
+  filter(STATE != "United States") %>%
+  select(-VOTE_FOR_HIGHEST_OFFICE)
+
+
+```
+
+remove * from state names 
+
+```{r}
+voter_turnout_1980_to_2022 <- voter_turnout_1980_to_2022 %>% mutate(
+    YEAR      = as.integer(YEAR),
+    STATE     = str_replace(STATE, "\\*$", ""),
+    STATE_ABV = STATE_ABV
+  )
+```
+
+chnage columns to numbers
+
+```{r}
+voter_turnout_1980_to_2022 <- voter_turnout_1980_to_2022 %>% mutate(
+    TOTAL_BALLOTS_COUNTED   = parse_number(TOTAL_BALLOTS_COUNTED),
+    VAP                     = parse_number(VAP),
+    INELIGIBLE_PRISON       = parse_number(INELIGIBLE_PRISON),
+    INELIGIBLE_PROBATION   = parse_number(INELIGIBLE_PROBATION),
+    INELIGIBLE_PAROLE       = parse_number(INELIGIBLE_PAROLE),
+    INELIGIBLE_FELONS_TOTAL = parse_number(INELIGIBLE_FELONS_TOTAL),
+    ELIGIBLE_OVERSEAS       = parse_number(ELIGIBLE_OVERSEAS),
+    VEP                     = parse_number(VEP),
+    NONCITIZEN_PCT    = parse_number(NONCITIZEN_PCT) / 100,
+    VEP_TURNOUT_RATE  = parse_number(VEP_TURNOUT_RATE) / 100,
+    VAP_TURNOUT_RATE  = parse_number(VAP_TURNOUT_RATE) / 100
+  ) 
+```
+
+Adding the election types
+```{r}
+voter_turnout_1980_to_2022 <- voter_turnout_1980_to_2022 %>% mutate(
+    election_type = if_else(YEAR %% 4 == 0L, "presidential", "midterm")
+  )
+
+```
+
+chnging all headings to lower case
+```{r}
+voter_turnout_1980_to_2022 <- voter_turnout_1980_to_2022 %>%
+  rename(
+    year                   = YEAR,
+    state                  = STATE,
+    state_abv              = STATE_ABV,
+    total_ballots_counted  = TOTAL_BALLOTS_COUNTED,
+    vap                    = VAP,
+    vep                    = VEP,
+    ineligible_prison      = INELIGIBLE_PRISON,
+    ineligible_probation   = INELIGIBLE_PROBATION,
+    ineligible_parole      = INELIGIBLE_PAROLE,
+    ineligible_felons_total = INELIGIBLE_FELONS_TOTAL,
+    eligible_overseas      = ELIGIBLE_OVERSEAS,
+    vep_turnout_rate       = VEP_TURNOUT_RATE,
+    vap_turnout_rate       = VAP_TURNOUT_RATE,
+    noncitizen_pct         = NONCITIZEN_PCT
+  )
+
+
+write_csv(voter_turnout_1980_to_2022, "data/processed-data/1980-2022_General_Election_clean.csv")
+```
+
+
+# import 2024 data
+
+```{r}
+voter_turnout_2024 <-  read.csv("data/Turnout_2024G_v0.3.csv")
+
+
+```
+
+# removing the "united states" row
+
+```{r}
+voter_turnout_2024 <- voter_turnout_2024 %>%
+  filter(STATE != "United States") %>% select(-X)
+  
+
+```
+
+
+
+```{r}
+voter_turnout_2024 <- voter_turnout_2024 %>% mutate(
+    VAP                     = parse_number(VAP),
+    INELIGIBLE_PRISON       = parse_number(INELIGIBLE_PRISON),
+    INELIGIBLE_PROBATION   = parse_number(INELIGIBLE_PROBATION),
+    INELIGIBLE_PAROLE       = parse_number(INELIGIBLE_PAROLE),
+    INELIGIBLE_FELONS_TOTAL = parse_number(INELIGIBLE_FELONS_TOTAL),
+    ELIGIBLE_OVERSEAS       = parse_number(ELIGIBLE_OVERSEAS),
+    VEP                     = parse_number(VEP),
+    NONCITIZEN_PCT    = parse_number(NONCITIZEN_PCT) / 100,
+    VEP_TURNOUT_RATE  = parse_number(VEP_TURNOUT_RATE) / 100,
+    VAP_TURNOUT_RATE  = parse_number(VAP_TURNOUT_RATE) / 100
+  ) 
+
+```
+
+```{r}
+voter_turnout_2024 <- voter_turnout_2024 %>%
+  rename(
+    state                  = STATE,
+    state_abv              = STATE_ABV,
+    total_ballots_counted  = TOTAL_BALLOTS_COUNTED,
+    vap                    = VAP,
+    vep                    = VEP,
+    ineligible_prison      = INELIGIBLE_PRISON,
+    ineligible_probation   = INELIGIBLE_PROBATION,
+    ineligible_parole      = INELIGIBLE_PAROLE,
+    ineligible_felons_total = INELIGIBLE_FELONS_TOTAL,
+    eligible_overseas      = ELIGIBLE_OVERSEAS,
+    vep_turnout_rate       = VEP_TURNOUT_RATE,
+    vap_turnout_rate       = VAP_TURNOUT_RATE,
+    noncitizen_pct         = NONCITIZEN_PCT
+  )
+
+```
+
+```{r}
+voter_turnout_2024 <- voter_turnout_2024 %>% mutate(
+    year = "2024",
+    year = as.integer(year),
+  )
+
+```
+
+```{r}
+voter_turnout_2024 <- voter_turnout_2024 %>%
+  mutate(
+    election_type = if_else(year %% 4 == 0, "presidential", "midterm")
+  )
+```
+
+```{r}
+write_csv(voter_turnout_2024, "data/processed-data/voter_turnout_2024.csv")
+```
+
+```{r}
+voter_turnout_all <- bind_rows(
+  voter_turnout_1980_to_2022,
+  voter_turnout_2024
+) %>%
+  arrange(desc(year))
+
+# Quick sanity check
+head(voter_turnout_all)
+
+# Save combined table
+write_csv(
+  voter_turnout_all,
+  "data/processed-data/voter_turnout_1980_2024_all.csv"
+)
+
+```
+
+```{r}
+michigan_turnout <- voter_turnout_all %>% 
+  filter(state == "Michigan")
+
+pennsylvania_turnout <- voter_turnout_all %>% 
+  filter(state == "Pennsylvania")
+
+california_turnout <- voter_turnout_all %>% 
+  filter(state == "California")
+
+newyork_turnout <- voter_turnout_all %>% 
+  filter(state == "New York")
+
+florida_turnout <- voter_turnout_all %>% 
+  filter(state == "Florida")
+
+texas_turnout <- voter_turnout_all %>% 
+  filter(state == "Texas")
+
+
+head(michigan_turnout)
+head(pennsylvania_turnout)
+head(california_turnout)
+head(newyork_turnout)
+head(florida_turnout)
+head(texas_turnout)
+
+```
