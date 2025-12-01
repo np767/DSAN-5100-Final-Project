@@ -1,0 +1,47 @@
+---
+title: "DSAN 5100 Project. Crime Data"
+author: Pavlos Baffes
+format: html
+---
+
+```{r}
+
+library(tidyverse)
+
+# Load aggravated assaul data
+agg_crime_ca <- read_csv("crime-data-5100/Aggravated-assault-California.csv")
+agg_crime_fl <- read_csv("crime-data-5100/Aggravated-assault-Florida.csv")
+agg_crime_ny <- read_csv("crime-data-5100/Aggravated-assault-New-York.csv")
+agg_crime_mi <- read_csv("crime-data-5100/Aggravated-assault-Michigan.csv")
+agg_crime_pa <- read_csv("crime-data-5100/Aggravated-assault-Pennsylvania.csv")
+agg_crime_tx <- read_csv("crime-data-5100/Aggravated-assault-Texas.csv")
+agg_crime_us <- read_csv("crime-data-5100/Aggravated-assault-US.csv")
+
+
+# Load Homicide data
+
+hom_crime_ca <- read_csv("crime-data-5100/Homicide-California.csv")
+hom_crime_fl <- read_csv("crime-data-5100/Homicide-Florida.csv")
+hom_crime_ny <- read_csv("crime-data-5100/Homicide-New-York.csv")
+hom_crime_mi <- read_csv("crime-data-5100/Homicide-Michigan.csv")
+hom_crime_pa <- read_csv("crime-data-5100/Homicide-Pennsylvania.csv")
+hom_crime_tx <- read_csv("crime-data-5100/Homicide-Texas.csv")
+hom_crime_us <- read_csv("crime-data-5100/Homicide-US.csv")
+
+
+```
+
+```{r}
+
+# Load Rape Data
+
+rp_crime_ca <- read_csv("crime-data-5100/Rape-California.csv")
+rp_crime_fl <- read_csv("crime-data-5100/Rape-Florida.csv")
+rp_crime_ny <- read_csv("crime-data-5100/Rape-New-York.csv")
+rp_crime_mi <- read_csv("crime-data-5100/Rape-Michigan.csv")
+rp_crime_pa <- read_csv("crime-data-5100/Rape-Pennsylvania.csv")
+rp_crime_tx <- read_csv("crime-data-5100/Rape-Texas.csv")
+rp_crime_us <- read_csv("crime-data-5100/Rape-US.csv")
+
+
+```
