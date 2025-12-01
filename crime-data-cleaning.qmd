@@ -173,10 +173,80 @@ crime_df <- full_df_agg |>
             left_join(full_df_rp, by =c("State", "Month_Year")) |>
             left_join(full_df_rob, by =c("State", "Month_Year"))
 
+# Add separate Month and Year column for population joining
+crime_df <- crime_df |> mutate(Month = substr(Month_Year, 1, 2), Year = substr(Month_Year, 4, 7))
+
 ```
 
 ```{r}
 
 # Pull in U.S. population 
+
+pop_1980_1989 <- read_csv("us-pop/US-pop-1980-1989.csv")
+
+pop_1990_1999 <- read_csv("us-pop/US-pop-1990-1999.csv")
+
+pop_2000_2009 <- read_csv("us-pop/US-pop-2000-2009.csv")
+
+pop_2010_2019 <- read_csv("us-pop/US-pop-2010-2019.csv")
+
+pop_2020_2024 <- read_csv("us-pop/US-pop-2020-2024.csv")
+
+```
+
+```{r}
+
+list_pop <- list(pop_1980_1989, pop_1990_1999, pop_2000_2009, pop_2010_2019, pop_2020_2024)
+
+# Create tibble to hold all population data
+
+pop_df <- tibble(
+    State = character(),
+    Year = character(),
+    population_count = double()
+)
+
+for (i in list_pop){
+
+    # Remove NA rows
+    i <- na.omit(i)
+
+    # pivot longer to get in proper format
+    i <- pivot_longer(i, cols=!State, names_to = "Year", values_to = "population_count")
+
+    pop_df <- rbind(i, pop_df)
+}
+
+```
+
+
+```{r}
+# Join crime data to population data
+
+crime_df_with_pop <- left_join(crime_df, pop_df, by = c("State", "Year"))
+
+
+# Remove NA values (specifically in this case, remove 2025 NA for population numbers since 2025 isnt done)
+crime_df_with_pop <- na.omit(crime_df_with_pop)
+```
+
+```{r}
+# Add rates for crimes using population data
+# Also include a total "violent_crime_count" for a total
+
+crime_df_with_pop <- crime_df_with_pop |>
+                    mutate(
+                        violent_crime_count = (aggravated_assault_count+homicide_count+rape_count+robbery_count),
+                        aggravated_assault_rate = (aggravated_assault_count / population_count)*100000,
+                        homicide_rate = (homicide_count / population_count)*100000,
+                        rape_rate = (rape_count / population_count)*100000,
+                        robbery_rate = (robbery_count / population_count)*100000,
+                        violent_crime_rate = (violent_crime_count / population_count)*100000)
+
+```
+
+```{r}
+
+write_csv(crime_df_with_pop, "data/processed-data/crime_data_clean.csv")
 
 ```
