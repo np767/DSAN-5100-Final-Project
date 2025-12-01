@@ -5,7 +5,6 @@ format: html
 ---
 
 ```{r}
-
 library(tidyverse)
 
 # Load aggravated assaul data
@@ -27,12 +26,9 @@ hom_crime_mi <- read_csv("crime-data-5100/Homicide-Michigan.csv")
 hom_crime_pa <- read_csv("crime-data-5100/Homicide-Pennsylvania.csv")
 hom_crime_tx <- read_csv("crime-data-5100/Homicide-Texas.csv")
 hom_crime_us <- read_csv("crime-data-5100/Homicide-US.csv")
-
-
 ```
 
 ```{r}
-
 # Load Rape Data
 
 rp_crime_ca <- read_csv("crime-data-5100/Rape-California.csv")
@@ -42,6 +38,21 @@ rp_crime_mi <- read_csv("crime-data-5100/Rape-Michigan.csv")
 rp_crime_pa <- read_csv("crime-data-5100/Rape-Pennsylvania.csv")
 rp_crime_tx <- read_csv("crime-data-5100/Rape-Texas.csv")
 rp_crime_us <- read_csv("crime-data-5100/Rape-US.csv")
+
+# Load Robbery Data
+
+rob_crime_ca <- read_csv("crime-data-5100/Robbery-California.csv")
+rob_crime_fl <- read_csv("crime-data-5100/Robbery-Florida.csv")
+rob_crime_ny <- read_csv("crime-data-5100/Robbery-New-York.csv")
+rob_crime_mi <- read_csv("crime-data-5100/Robbery-Michigan.csv")
+rob_crime_pa <- read_csv("crime-data-5100/Robbery-Pennsylvania.csv")
+rob_crime_tx <- read_csv("crime-data-5100/Robbery-Texas.csv")
+rob_crime_us <- read_csv("crime-data-5100/Robbery-US.csv")
+```
+
+```{r}
+
+
 
 
 ```
