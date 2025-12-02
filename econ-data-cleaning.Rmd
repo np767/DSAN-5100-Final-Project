@@ -2,6 +2,7 @@ Load all relevant packages
 ```{r}
 library(dplyr)
 library(purrr)
+library(lubridate)
 ```
 
 Load in all relevant economic data
@@ -67,4 +68,35 @@ Save joined dataframe to csv for further cleaning and analysis
 
 ```{r}
 write.csv(joined_econ_df, "data/joined_econ_df.csv")
+```
+
+Further cleaning on joined dataframe. 
+
+```{r}
+econ_data <- read.csv('data/joined_econ_df.csv')
+econ_data$Observation.Date <- as.Date(econ_data$Observation.Date)
+class(econ_data$Observation.Date)
+```
+
+Aggregate dates by month (yyyy-mm) rather than by day (yyyy-mm-dd)
+
+```{r}
+econ_monthly <- econ_data %>%
+  mutate(year_month = floor_date(Observation.Date, "month")) %>%
+  group_by(year_month) %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+
+econ_monthly
+```
+
+```{r}
+econ_monthly_final <- subset(econ_monthly, select = -X)
+econ_monthly_final
+
+```
+
+Now it's fully cleaned! Write to data/processed folder
+
+```{r}
+write.csv(econ_monthly_final, "data/processed-data/final_econ_df.csv")
 ```
