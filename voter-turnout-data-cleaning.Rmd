@@ -187,30 +187,78 @@ write_csv(
 Subsets specific state for analysis focus
 
 ```{r}
-michigan_turnout <- voter_turnout_all %>% 
-  filter(state == "Michigan")
-
-pennsylvania_turnout <- voter_turnout_all %>% 
-  filter(state == "Pennsylvania")
-
-california_turnout <- voter_turnout_all %>% 
-  filter(state == "California")
-
-newyork_turnout <- voter_turnout_all %>% 
+newyork_turnout <- voter_turnout_all %>%
   filter(state == "New York")
 
-florida_turnout <- voter_turnout_all %>% 
+california_turnout <- voter_turnout_all %>%
+  filter(state == "California")
+
+ohio_turnout <- voter_turnout_all %>%
+  filter(state == "Ohio")
+
+michigan_turnout <- voter_turnout_all %>%
+  filter(state == "Michigan")
+
+florida_turnout <- voter_turnout_all %>%
   filter(state == "Florida")
 
-texas_turnout <- voter_turnout_all %>% 
-  filter(state == "Texas")
+utah_turnout <- voter_turnout_all %>%
+  filter(state == "Utah")
 
 
-head(michigan_turnout)
-head(pennsylvania_turnout)
-head(california_turnout)
 head(newyork_turnout)
+head(california_turnout)
+head(ohio_turnout)
+head(michigan_turnout)
 head(florida_turnout)
-head(texas_turnout)
+head(utah_turnout)
+
+```
+
+Filter to only selected states for analysis
+
+```{r}
+selected_states <- c("New York", "California", "Ohio", "Michigan", "Florida", "Utah")
+
+voter_turnout_selected_states <- voter_turnout_all %>%
+  filter(state %in% selected_states)
+
+head(voter_turnout_selected_states)
+
+```
+
+# Data Quality Assessment (Selected States)
+
+Check for missing values
+
+```{r}
+# Count missing values per column
+missing_summary <- voter_turnout_selected_states %>%
+  summarise(across(everything(), ~sum(is.na(.)))) %>%
+  pivot_longer(everything(), names_to = "column",
+               values_to = "missing_count") %>%
+  filter(missing_count > 0) %>%
+  arrange(desc(missing_count))
+
+print("Missing Values in Selected States:")
+print(missing_summary)
+
+# Calculate percentage of missing values
+total_rows <- nrow(voter_turnout_selected_states)
+if(nrow(missing_summary) > 0) {
+  missing_summary <- missing_summary %>%
+    mutate(missing_pct = round((missing_count / total_rows) * 100, 2))
+  print(missing_summary)
+}
+```
+
+
+# Save cleaned and validated dataset
+
+```{r}
+write_csv(
+  voter_turnout_selected_states,
+  "data/processed-data/voter_turnout_selected_states.csv"
+)
 
 ```
