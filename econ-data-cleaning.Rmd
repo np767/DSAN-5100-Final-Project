@@ -89,8 +89,14 @@ econ_monthly <- econ_data %>%
 econ_monthly
 ```
 
+```{r}
+econ_monthly_final <- subset(econ_monthly, select = -X)
+econ_monthly_final
+
+```
+
 Now it's fully cleaned! Write to data/processed folder
 
 ```{r}
-write.csv(econ_monthly, "data/processed-data/final_econ_df.csv")
+write.csv(econ_monthly_final, "data/processed-data/final_econ_df.csv")
 ```
