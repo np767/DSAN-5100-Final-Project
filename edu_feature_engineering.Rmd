@@ -1,0 +1,68 @@
+---
+title: "Education Feature Engineering"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(dplyr)
+```
+
+## Load Data
+
+```{r}
+# Load the dataset
+file_path <- "data/processed-data/25_Years_and_Over_Both_Sexes.csv"
+df <- read_csv(file_path)
+
+# Display the first few rows
+head(df)
+```
+
+## Feature Engineering
+
+Calculate the percentage of High School graduates (High_4) and College graduates (College_4) relative to the Total population.
+
+```{r}
+# Function to process data: Rename Year, Sort, Calculate Percentages and Growth Rates
+process_education_data <- function(df) {
+  df %>%
+    rename(Year = 1) %>%
+    arrange(Year) %>%
+    mutate(
+      High_4_Percent = (High_4 / Total) * 100,
+      College_4_Percent = (College_4 / Total) * 100,
+      Growth_Total = (Total - lag(Total)) / lag(Total) * 100,
+      Growth_High_4 = (High_4 - lag(High_4)) / lag(High_4) * 100,
+      Growth_College_4 = (College_4 - lag(College_4)) / lag(College_4) * 100
+    ) %>%
+    filter(Year >= 1980 & Year <= 2024)
+}
+
+# Load datasets
+df_both <- read_csv("data/processed-data/25_Years_and_Over_Both_Sexes.csv")
+df_female <- read_csv("data/processed-data/25_Years_and_Over_Female.csv")
+df_male <- read_csv("data/processed-data/25_Years_and_Over_Male.csv")
+
+# Process datasets
+df_both_processed <- process_education_data(df_both)
+df_female_processed <- process_education_data(df_female)
+df_male_processed <- process_education_data(df_male)
+
+# Display heads to verify
+print("Both Sexes Head:")
+head(df_both_processed)
+
+print("Female Head:")
+head(df_female_processed)
+
+print("Male Head:")
+head(df_male_processed)
+
+# Save processed datasets
+write_csv(df_both_processed, "data/processed-data/25_Years_and_Over_Both_Sexes_Engineered.csv")
+write_csv(df_female_processed, "data/processed-data/25_Years_and_Over_Female_Engineered.csv")
+write_csv(df_male_processed, "data/processed-data/25_Years_and_Over_Male_Engineered.csv")
+```
