@@ -283,6 +283,19 @@ head(20)
 
 ```
 
+# Adding state_color labels
+
+```{r}
+voter_turnout_selected_states <- voter_turnout_selected_states %>%
+  mutate(
+    state_color = case_when(
+      state %in% c("New York", "California") ~ "blue",
+      state %in% c("Ohio", "Michigan") ~ "purple",
+      state %in% c("Florida", "Utah") ~ "red",
+      TRUE ~ NA_character_
+    )
+  )
+```
 
 # Save cleaned and validated dataset
 
