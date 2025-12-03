@@ -1,0 +1,49 @@
+Load all relevant packages
+
+```{r}
+library(dplyr)
+library(purrr)
+library(lubridate)
+```
+
+Load in all relevant csv files
+
+```{r}
+florida <- read.csv("data/raw-data/FLUR.csv")
+ohio <- read.csv("data/raw-data/OHUR.csv")
+utah <- read.csv("data/raw-data/UTUR.csv")
+michigan <- read.csv("data/raw-data/MIUR.csv")
+new_york <- read.csv("data/raw-data/NYUR.csv")
+california <- read.csv("data/raw-data/CAUR.csv")
+```
+
+Join all 6 by observation_date
+
+```{r}
+unemployment <- reduce(list(florida, utah, ohio, michigan, new_york, california), 
+                      ~ inner_join(.x, .y, by = "observation_date"))
+```
+
+Aggregate by year
+
+```{r}
+unemployment$observation_date <- as.Date(unemployment$observation_date)
+
+unemployment <- unemployment %>%
+  mutate(year = year(observation_date)) %>%
+  group_by(year) %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+```
+
+Rename columns
+
+```{r}
+col_names <- c("year", "Florida","Ohio","Utah","Michigan","New York","California")
+colnames(unemployment) <- col_names
+```
+
+Clean. Save to csv
+
+```{r}
+write.csv(unemployment, "data/processed-data/unemployment_df.csv")
+```

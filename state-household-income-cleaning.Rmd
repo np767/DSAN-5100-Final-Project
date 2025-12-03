@@ -1,0 +1,49 @@
+Load all relevant packages
+
+```{r}
+library(dplyr)
+library(purrr)
+library(lubridate)
+```
+
+Load in all relevant csv files
+
+```{r}
+florida <- read.csv("data/raw-data/MEHOINUSFLA646N.csv")
+ohio <- read.csv("data/raw-data/MEHOINUSOHA646N.csv")
+utah <- read.csv("data/raw-data/MEHOINUSUTA672N.csv")
+michigan <- read.csv("data/raw-data/MEHOINUSMIA672N.csv")
+new_york <- read.csv("data/raw-data/MEHOINUSCAA646N.csv")
+california <- read.csv("data/raw-data/MEHOINUSNYA672N.csv")
+```
+
+Join all 6 by observation_date
+
+```{r}
+household <- reduce(list(florida, utah, ohio, michigan, new_york, california), 
+                      ~ inner_join(.x, .y, by = "observation_date"))
+```
+
+Aggregate by year
+
+```{r}
+household$observation_date <- as.Date(household$observation_date)
+
+household <- household %>%
+  mutate(year = year(observation_date)) %>%
+  group_by(year) %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+```
+
+Rename columns
+
+```{r}
+col_names <- c("year", "Florida","Ohio","Utah","Michigan","New York","California")
+colnames(household) <- col_names
+```
+
+Clean. Save to csv
+
+```{r}
+write.csv(household, "data/processed-data/household_income_df.csv")
+```
