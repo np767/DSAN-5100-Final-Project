@@ -184,6 +184,15 @@ write_csv(
 
 ```
 
+```{r}
+voter_turnout_all <- voter_turnout_all %>%
+  select(year, state, state_abv, total_ballots_counted, vap, vep,
+         vap_turnout_rate, vep_turnout_rate, election_type)
+
+head(voter_turnout_all)
+str(voter_turnout_all)
+```
+
 Subsets specific state for analysis focus
 
 ```{r}
@@ -250,6 +259,28 @@ if(nrow(missing_summary) > 0) {
     mutate(missing_pct = round((missing_count / total_rows) * 100, 2))
   print(missing_summary)
 }
+```
+
+
+Normalize VEP turnout rate by state and election type
+
+```{r}
+
+# Calculate mean VEP turnout rate for each state-election type combination
+# Then subtract that mean from each observation to get normalized values
+voter_turnout_selected_states <- voter_turnout_selected_states %>%
+  group_by(state, election_type) %>%
+  mutate(
+    mean_vep_turnout = mean(vep_turnout_rate, na.rm = TRUE),
+    normalized_vep_turnout = vep_turnout_rate - mean_vep_turnout
+  ) %>%
+  ungroup()
+
+
+voter_turnout_selected_states %>% arrange(state, election_type, year) %>%
+
+head(20)
+
 ```
 
 
