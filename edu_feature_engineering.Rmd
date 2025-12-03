@@ -1,0 +1,50 @@
+---
+title: "Education Feature Engineering"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(dplyr)
+```
+
+## Load Data
+
+```{r}
+# Load the dataset
+file_path <- "data/processed-data/edu_by_gender/25_Years_and_Over_Both_Sexes.csv"
+df <- read_csv(file_path)
+
+```
+
+## Feature Engineering
+
+Calculate the percentage of High School graduates (High_4) and College graduates (College_4) relative to the Total population.
+
+```{r}
+# Function to process data: Rename Year, Sort, Calculate Percentages and Growth Rates
+process_education_data <- function(df) {
+  df %>%
+    rename(Year = 1) %>%
+    arrange(Year) %>%
+    mutate(
+      High_4_Percent = (High_4 / Total) * 100,
+      College_4_Percent = (College_4 / Total) * 100,
+      Growth_Total = (Total - lag(Total)) / lag(Total) * 100,
+      Growth_High_4 = (High_4 - lag(High_4)) / lag(High_4) * 100,
+      Growth_College_4 = (College_4 - lag(College_4)) / lag(College_4) * 100
+    ) %>%
+    filter(Year >= 1980 & Year <= 2024)
+}
+
+# Load datasets
+df_both <- read_csv("data/processed-data/edu_by_gender/25_Years_and_Over_Both_Sexes.csv")
+
+# Process datasets
+df_both_processed <- process_education_data(df_both)
+
+# Save processed datasets
+write_csv(df_both_processed, "data/processed-data/25_Years_Over_Both_Engineered.csv")
+```
