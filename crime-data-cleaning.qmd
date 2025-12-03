@@ -1,0 +1,252 @@
+---
+title: "DSAN 5100 Project. Crime Data"
+author: Pavlos Baffes
+format: html
+---
+
+```{r}
+library(tidyverse)
+
+# Load aggravated assault data
+agg_crime_ca <- read_csv("crime-data/crime-numbers/Aggravated-assault-California.csv")
+agg_crime_fl <- read_csv("crime-data/crime-numbers/Aggravated-assault-Florida.csv")
+agg_crime_ny <- read_csv("crime-data/crime-numbers/Aggravated-assault-New-York.csv")
+agg_crime_mi <- read_csv("crime-data/crime-numbers/Aggravated-assault-Michigan.csv")
+agg_crime_pa <- read_csv("crime-data/crime-numbers/Aggravated-assault-Pennsylvania.csv")
+agg_crime_tx <- read_csv("crime-data/crime-numbers/Aggravated-assault-Texas.csv")
+agg_crime_us <- read_csv("crime-data/crime-numbers/Aggravated-assault-US.csv")
+
+
+# Load Homicide data
+
+hom_crime_ca <- read_csv("crime-data/crime-numbers/Homicide-California.csv")
+hom_crime_fl <- read_csv("crime-data/crime-numbers/Homicide-Florida.csv")
+hom_crime_ny <- read_csv("crime-data/crime-numbers/Homicide-New-York.csv")
+hom_crime_mi <- read_csv("crime-data/crime-numbers/Homicide-Michigan.csv")
+hom_crime_pa <- read_csv("crime-data/crime-numbers/Homicide-Pennsylvania.csv")
+hom_crime_tx <- read_csv("crime-data/crime-numbers/Homicide-Texas.csv")
+hom_crime_us <- read_csv("crime-data/crime-numbers/Homicide-US.csv")
+```
+
+```{r}
+
+library(tidyverse)
+
+# Load Rape Data
+
+rp_crime_ca <- read_csv("crime-data/crime-numbers/Rape-California.csv")
+rp_crime_fl <- read_csv("crime-data/crime-numbers/Rape-Florida.csv")
+rp_crime_ny <- read_csv("crime-data/crime-numbers/Rape-New-York.csv")
+rp_crime_mi <- read_csv("crime-data/crime-numbers/Rape-Michigan.csv")
+rp_crime_pa <- read_csv("crime-data/crime-numbers/Rape-Pennsylvania.csv")
+rp_crime_tx <- read_csv("crime-data/crime-numbers/Rape-Texas.csv")
+rp_crime_us <- read_csv("crime-data/crime-numbers/Rape-US.csv")
+
+# Load Robbery Data
+
+rob_crime_ca <- read_csv("crime-data/crime-numbers/Robbery-California.csv")
+rob_crime_fl <- read_csv("crime-data/crime-numbers/Robbery-Florida.csv")
+rob_crime_ny <- read_csv("crime-data/crime-numbers/Robbery-New-York.csv")
+rob_crime_mi <- read_csv("crime-data/crime-numbers/Robbery-Michigan.csv")
+rob_crime_pa <- read_csv("crime-data/crime-numbers/Robbery-Pennsylvania.csv")
+rob_crime_tx <- read_csv("crime-data/crime-numbers/Robbery-Texas.csv")
+rob_crime_us <- read_csv("crime-data/crime-numbers/Robbery-US.csv")
+```
+
+
+
+```{r}
+list_df_agg <- list(agg_crime_ca, agg_crime_fl, agg_crime_ny, agg_crime_mi, agg_crime_pa, agg_crime_tx, agg_crime_us)
+
+# Create tibble to hold all aggravated assault data
+full_df_agg <- tibble(
+    State = character(),
+    Month_Year = character(),
+    aggravated_assault_count = double()
+)
+
+# Bind all the states and US together to make 1 tibble
+for (i in list_df_agg){
+
+    # Rename column to state
+    i <- i |> rename(State = Series)
+
+    # delete row 2 since it is not needed
+    i <- i[-2, ]
+
+    # pivot longer to get in proper format
+    i <- i |> pivot_longer(cols = !State, names_to = "Month_Year", values_to = "aggravated_assault_count")
+
+    full_df_agg <- rbind(i, full_df_agg)
+}
+
+```
+
+```{r}
+list_df_hom <- list(hom_crime_ca, hom_crime_fl, hom_crime_ny, hom_crime_mi, hom_crime_pa, hom_crime_tx, hom_crime_us)
+
+# Create tibble to hold all Homicide data
+full_df_hom <- tibble(
+    State = character(),
+    Month_Year = character(),
+    homicide_count = double()
+)
+
+# Bind all the states and US together to make 1 tibble
+for (i in list_df_hom){
+
+    # Rename column to state
+    i <- i |> rename(State = Series)
+
+    # delete row 2 since it is not needed
+    i <- i[-2, ]
+
+    # pivot longer to get in proper format
+    i <- i |> pivot_longer(cols = !State, names_to = "Month_Year", values_to = "homicide_count")
+
+    full_df_hom <- rbind(i, full_df_hom)
+}
+```
+
+```{r}
+
+list_df_rp <- list(rp_crime_ca, rp_crime_fl, rp_crime_ny, rp_crime_mi, rp_crime_pa, rp_crime_tx, rp_crime_us)
+
+# Create tibble to hold all Rape data
+full_df_rp <- tibble(
+    State = character(),
+    Month_Year = character(),
+    homicide_count = double()
+)
+
+# Bind all the states and US together to make 1 tibble
+for (i in list_df_rp){
+
+    # Rename column to state
+    i <- i |> rename(State = Series)
+
+    # delete row 2 since it is not needed
+    i <- i[-2, ]
+
+    # pivot longer to get in proper format
+    i <- i |> pivot_longer(cols = !State, names_to = "Month_Year", values_to = "rape_count")
+
+    full_df_rp <- rbind(i, full_df_rp)
+}
+
+```
+
+```{r}
+
+list_df_rob <- list(rob_crime_ca, rob_crime_fl, rob_crime_ny, rob_crime_mi, rob_crime_pa, rob_crime_tx, rob_crime_us)
+
+# Create tibble to hold all Robbery data
+full_df_rob <- tibble(
+    State = character(),
+    Month_Year = character(),
+    homicide_count = double()
+)
+
+# Bind all the states and US together to make 1 tibble
+for (i in list_df_rob){
+
+    # Rename column to state
+    i <- i |> rename(State = Series)
+
+    # delete row 2 since it is not needed
+    i <- i[-2, ]
+
+    # pivot longer to get in proper format
+    i <- i |> pivot_longer(cols = !State, names_to = "Month_Year", values_to = "robbery_count")
+
+    full_df_rob <- rbind(i, full_df_rob)
+}
+
+```
+
+```{r}
+
+# Join all crime data together to create final crime_df
+
+crime_df <- full_df_agg |>
+            left_join(full_df_hom, by =c("State", "Month_Year")) |>
+            left_join(full_df_rp, by =c("State", "Month_Year")) |>
+            left_join(full_df_rob, by =c("State", "Month_Year"))
+
+# Add separate Month and Year column for population joining
+crime_df <- crime_df |> mutate(Month = substr(Month_Year, 1, 2), Year = substr(Month_Year, 4, 7))
+
+```
+
+```{r}
+
+# Pull in U.S. population 
+
+pop_1980_1989 <- read_csv("crime-data/population-numbers/US-pop-1980-1989.csv")
+
+pop_1990_1999 <- read_csv("crime-data/population-numbers/US-pop-1990-1999.csv")
+
+pop_2000_2009 <- read_csv("crime-data/population-numbers/US-pop-2000-2009.csv")
+
+pop_2010_2019 <- read_csv("crime-data/population-numbers/US-pop-2010-2019.csv")
+
+pop_2020_2024 <- read_csv("crime-data/population-numbers/US-pop-2020-2024.csv")
+
+```
+
+```{r}
+
+list_pop <- list(pop_1980_1989, pop_1990_1999, pop_2000_2009, pop_2010_2019, pop_2020_2024)
+
+# Create tibble to hold all population data
+
+pop_df <- tibble(
+    State = character(),
+    Year = character(),
+    population_count = double()
+)
+
+for (i in list_pop){
+
+    # Remove NA rows
+    i <- na.omit(i)
+
+    # pivot longer to get in proper format
+    i <- pivot_longer(i, cols=!State, names_to = "Year", values_to = "population_count")
+
+    pop_df <- rbind(i, pop_df)
+}
+
+```
+
+
+```{r}
+# Join crime data to population data
+
+crime_df_with_pop <- left_join(crime_df, pop_df, by = c("State", "Year"))
+
+
+# Remove NA values (specifically in this case, remove 2025 NA for population numbers since 2025 isnt done)
+crime_df_with_pop <- na.omit(crime_df_with_pop)
+```
+
+```{r}
+# Add rates for crimes using population data
+# Also include a total "violent_crime_count" for a total
+
+crime_df_with_pop <- crime_df_with_pop |>
+                    mutate(
+                        violent_crime_count = (aggravated_assault_count+homicide_count+rape_count+robbery_count),
+                        aggravated_assault_rate = (aggravated_assault_count / population_count)*100000,
+                        homicide_rate = (homicide_count / population_count)*100000,
+                        rape_rate = (rape_count / population_count)*100000,
+                        robbery_rate = (robbery_count / population_count)*100000,
+                        violent_crime_rate = (violent_crime_count / population_count)*100000)
+
+```
+
+```{r}
+
+write_csv(crime_df_with_pop, "data/processed-data/crime_data_clean.csv")
+
+```
