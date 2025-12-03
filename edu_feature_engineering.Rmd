@@ -14,11 +14,9 @@ library(dplyr)
 
 ```{r}
 # Load the dataset
-file_path <- "data/processed-data/25_Years_and_Over_Both_Sexes.csv"
+file_path <- "data/processed-data/edu_by_gender/25_Years_and_Over_Both_Sexes.csv"
 df <- read_csv(file_path)
 
-# Display the first few rows
-head(df)
 ```
 
 ## Feature Engineering
@@ -42,27 +40,11 @@ process_education_data <- function(df) {
 }
 
 # Load datasets
-df_both <- read_csv("data/processed-data/25_Years_and_Over_Both_Sexes.csv")
-df_female <- read_csv("data/processed-data/25_Years_and_Over_Female.csv")
-df_male <- read_csv("data/processed-data/25_Years_and_Over_Male.csv")
+df_both <- read_csv("data/processed-data/edu_by_gender/25_Years_and_Over_Both_Sexes.csv")
 
 # Process datasets
 df_both_processed <- process_education_data(df_both)
-df_female_processed <- process_education_data(df_female)
-df_male_processed <- process_education_data(df_male)
-
-# Display heads to verify
-print("Both Sexes Head:")
-head(df_both_processed)
-
-print("Female Head:")
-head(df_female_processed)
-
-print("Male Head:")
-head(df_male_processed)
 
 # Save processed datasets
-write_csv(df_both_processed, "data/processed-data/25_Years_and_Over_Both_Sexes_Engineered.csv")
-write_csv(df_female_processed, "data/processed-data/25_Years_and_Over_Female_Engineered.csv")
-write_csv(df_male_processed, "data/processed-data/25_Years_and_Over_Male_Engineered.csv")
+write_csv(df_both_processed, "data/processed-data/25_Years_Over_Both_Engineered.csv")
 ```
