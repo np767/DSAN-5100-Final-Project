@@ -239,6 +239,9 @@ crime_df_with_pop <- na.omit(crime_df_with_pop)
 crime_df_with_pop <- crime_df_with_pop |> 
                     mutate(
                         violent_crime_count = (aggravated_assault_count+homicide_count+rape_count+robbery_count))
+
+# Remove 1985 data since there is only 1 month
+crime_df_with_pop <- crime_df_with_pop |> filter(Year > 1985)
 ```   
 
 ```{r}
