@@ -1,0 +1,195 @@
+Load all relevant packages
+
+```{r}
+library(dplyr)
+library(purrr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(GGally)
+```
+
+Load in relevant cleaned data
+
+```{r}
+household <- read.csv("data/processed-data/household_income_df.csv")
+unemployment <- read.csv("data/processed-data/unemployment_df.csv")
+hpi <- read.csv("data/processed-data/hpi_cleaned.csv")
+colnames(hpi) <- c("State", "year", "HPI", "Percentage_Increase")
+names(unemployment)[names(unemployment) == "New.York"] <- "New York"
+names(household)[names(household) == "New.York"] <- "New York"
+```
+
+
+Pivot unemployment and household from wide --> long to match hpi
+
+```{r}
+household <- household %>%
+  select(-X) %>%
+  tidyr::pivot_longer(
+    cols = -year,
+    names_to = "State",
+    values_to = "Household_Income"
+  )
+
+unemployment <- unemployment %>%
+  select(-X) %>%
+  tidyr::pivot_longer(
+    cols = -year,
+    names_to = "State",
+    values_to = "Unemployment_Rate"
+  )
+```
+
+Join all 3 dataframes
+
+```{r}
+econ_all <- household %>%
+  left_join(unemployment, by = c("year", "State")) %>%
+  left_join(hpi, by = c("year", "State"))
+```
+
+Save econ_all dataframe to processed-data
+
+```{r}
+write.csv(econ_all, "data/processed-data/merged_economic_data.csv")
+```
+
+Summary Statistics
+
+```{r}
+econ_all %>%
+  group_by(State) %>%
+  summarise(
+    Mean_Income = mean(Household_Income, na.rm = TRUE),
+    Median_Income = median(Household_Income, na.rm = TRUE),
+    SD_Income = sd(Household_Income, na.rm = TRUE),
+    Mean_Unemp = mean(Unemployment_Rate, na.rm = TRUE),
+    Median_Unemp = median(Unemployment_Rate, na.rm = TRUE),
+    SD_Unemp = sd(Unemployment_Rate, na.rm = TRUE),
+    Mean_HPI = mean(HPI, na.rm = TRUE),
+    Median_HPI = median(HPI, na.rm = TRUE),
+    SD_HPI = sd(HPI, na.rm = TRUE)
+  )
+```
+
+Line plots by state
+
+```{r}
+ggplot(household, aes(x = year, y = Household_Income, color = State)) +
+  geom_line(size = 1) +
+  geom_point() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Median Household Income by State",
+    x = "Year",
+    y = "Income (USD)",
+    color = "State"
+  ) +
+  theme_minimal()
+
+ggplot(unemployment, aes(x = year, y = Unemployment_Rate, color = State)) +
+  geom_line(size = 1) +
+  geom_point() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Unemployment Rate by State",
+    x = "Year",
+    y = "Unemployment Rate (%)",
+    color = "State"
+  ) +
+  theme_minimal()
+
+ggplot(hpi, aes(x = year, y = HPI, color = State)) +
+  geom_line(size = 1) +
+  geom_point() +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title = "Housing Price Index by State",
+    x = "Year",
+    y = "HPI",
+    color = "State"
+  ) +
+  theme_minimal()
+```
+
+Faceted Plots
+
+```{r}
+ggplot(household, aes(x = year, y = Household_Income)) +
+  geom_line(color = "steelblue") +
+  geom_smooth(method="loess") +
+  facet_wrap(~State, scales = "free_y") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Household Income Trends by State",
+       x = "Year", y = "Income (USD)")
+
+ggplot(unemployment, aes(x = year, y = Unemployment_Rate)) +
+  geom_line(color = "forestgreen") +
+  geom_smooth(method="loess") +
+  facet_wrap(~State, scales = "free_y") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Unemployment Rate Trends by State",
+       x = "Year", y = "Unemployment Rate (%)")
+
+ggplot(hpi, aes(x = year, y = HPI)) +
+  geom_line(color = "maroon") +
+  geom_smooth(method="loess") +
+  facet_wrap(~State, scales = "free_y") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Household Price Index Trends by State",
+       x = "Year", y = "Household Price Index (Compared to 100 in 1975)")
+```
+Correlation Matrix. First create wide-formatted tables
+
+```{r}
+# Function to create correlation ggpairs plot per metric
+plot_metric_corr <- function(df, metric_col, prefix) {
+  
+  # Pivot to wide format: one column per state
+  df_wide <- df %>%
+    select(year, State, all_of(metric_col)) %>%
+    pivot_wider(
+      names_from = State,
+      values_from = all_of(metric_col)
+    )
+  
+  # Ensure column names are syntactically valid
+  colnames(df_wide) <- make.names(colnames(df_wide))
+  
+  # Remove 'year' for correlation matrix
+  ggpairs(df_wide[, -1], title = paste("Correlation Matrix:", prefix), progress = F)
+}
+
+# Household Income correlation matrix
+plot_metric_corr(econ_all, "Household_Income", "Household Income")
+
+# Unemployment Rate correlation matrix
+plot_metric_corr(econ_all, "Unemployment_Rate", "Unemployment Rate")
+
+# Housing Price Index correlation matrix
+plot_metric_corr(econ_all, "HPI", "Housing Price Index")
+```
+
+Growth/Percentage Change
+
+```{r}
+#Create pct_change columns for each metrix
+econ_all <- econ_all %>%
+  group_by(State) %>%
+  mutate(
+    Income_Pct_Change = 100 * (Household_Income / first(Household_Income) - 1),
+    HPI_Pct_Change = 100 * (HPI / first(HPI) - 1)
+  )
+
+# Plot % change
+ggplot(econ_all, aes(x = year, y = Income_Pct_Change, color = State)) +
+  geom_line(size = 1) +
+  labs(title = "Household Income % Change Since First Year",
+       x = "Year", y = "Percent Change", color = "State")
+
+ggplot(econ_all, aes(x = year, y = HPI_Pct_Change, color = State)) +
+  geom_line(size = 1) +
+  labs(title = "Housing Price Index % Change Since First Year",
+       x = "Year", y = "Percent Change", color = "State")
+```
