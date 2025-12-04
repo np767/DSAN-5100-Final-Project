@@ -271,7 +271,7 @@ fig_hom <- plot_ly() |>
   ) |>
     style(showlegend = FALSE) # Remove legend for every graph except one to ensure no duplicated legends
 
-# Create figure for Rape crime rate
+# Create figure for Rape crime rates
 
 fig_rp <- plot_ly() |>
 
