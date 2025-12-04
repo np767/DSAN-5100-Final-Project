@@ -1,0 +1,370 @@
+---
+title: "DSAN 5100 Project. Crime Data EDA"
+author: Pavlos Baffes
+format: html
+---
+
+```{r}
+
+#Pull in proper libraries
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+
+#Pull in cleaned crime data
+
+crime_data <- read_csv('data/processed-data/crime_data_yearly_clean.csv')
+
+```
+
+```{r}
+# Distributions of crime rates
+
+# Plot boxplot of violent crime rates per month of each state and the nation
+
+ggplot(crime_data, aes(x=State, y=violent_crime_rate))+
+geom_boxplot(aes(fill = State), color = "black", alpha = 0.7)+
+labs(
+    title = "Distribution of Violent Crime by State and Nation",
+    x = "States + US",
+    y = "Crime per 100k",
+    subtitle = "State and National level yearly data aggregated from 1986-2024"
+) +
+theme_minimal() +
+theme(
+    plot.title = element_text(
+      hjust = 0.5,        # centers the title
+      size = 20,          # title font size
+      face = "bold"       
+    ),
+    plot.subtitle = element_text(
+      hjust = 0.5,        # centers the subtitle
+      size = 14           # subtitle font size
+    )
+  ) +
+scale_fill_brewer(palette = "Dark2")
+
+```
+
+```{r}
+
+# Plot boxplot of Aggravated Assault crime rates per year of each state and the nation
+
+ggplot(crime_data, aes(x=State, y=aggravated_assault_rate))+
+geom_boxplot(aes(fill = State), color = "black", alpha = 0.7)+
+labs(
+    title = "Distribution of Aggravated Assault by State and Nation",
+    x = "States + US",
+    y = "Crime per 100k",
+    subtitle = "State and National level yearly data aggregated from 1986-2024"
+) +
+theme_minimal() +
+theme(
+    plot.title = element_text(
+      hjust = 0.5,        # centers the title
+      size = 20,          # title font size
+      face = "bold"      
+    ),
+    plot.subtitle = element_text(
+      hjust = 0.5,        # centers the subtitle
+      size = 14           # subtitle font size
+    )
+  ) +
+scale_fill_brewer(palette = "Dark2")
+
+```
+
+```{r}
+
+# Plot boxplot of Homicide crime rates per year of each state and the nation
+
+ggplot(crime_data, aes(x=State, y=homicide_rate))+
+geom_boxplot(aes(fill = State), color = "black", alpha = 0.7)+
+labs(
+    title = "Distribution of Homicide by State and Nation",
+    x = "States + US",
+    y = "Crime per 100k",
+    subtitle = "State and National level yearly data aggregated from 1986-2024"
+) +
+theme_minimal() +
+theme(
+    plot.title = element_text(
+      hjust = 0.5,        # centers the title
+      size = 20,          # title font size
+      face = "bold"
+    ),
+    plot.subtitle = element_text(
+      hjust = 0.5,        # centers the subtitle
+      size = 14           # subtitle font size
+    )
+  ) +
+scale_fill_brewer(palette = "Dark2")
+
+```
+
+```{r}
+# Plot boxplot of Rape crime rates per year of each state and the nation
+
+ggplot(crime_data, aes(x=State, y=rape_rate))+
+geom_boxplot(aes(fill = State), color = "black", alpha = 0.7)+
+labs(
+    title = "Distribution of Homicide by State and Nation",
+    x = "States + US",
+    y = "Crime per 100k",
+    subtitle = "State and National level yearly data aggregated from 1986-2024"
+) +
+theme_minimal() +
+theme(
+    plot.title = element_text(
+      hjust = 0.5,        # centers the title
+      size = 20,          # title font size
+      face = "bold"
+    ),
+    plot.subtitle = element_text(
+      hjust = 0.5,        # centers the subtitle
+      size = 14           # subtitle font size
+    )
+  ) +
+scale_fill_brewer(palette = "Dark2")
+
+```
+
+```{r}
+
+# Plot boxplot of Robbery crime rates per year of each state and the nation
+
+ggplot(crime_data, aes(x=State, y=robbery_rate))+
+geom_boxplot(aes(fill = State), color = "black", alpha = 0.7)+
+labs(
+    title = "Distribution of Homicide by State and Nation",
+    x = "States + US",
+    y = "Crime per 100k",
+    subtitle = "State and National level yearly data aggregated from 1986-2024"
+) +
+theme_minimal() +
+theme(
+    plot.title = element_text(
+      hjust = 0.5,        # centers the title
+      size = 20,          # title font size
+      face = "bold"
+    ),
+    plot.subtitle = element_text(
+      hjust = 0.5,        # centers the subtitle
+      size = 14           # subtitle font size
+    )
+  ) +
+scale_fill_brewer(palette = "Dark2")
+
+```
+
+```{r}
+
+# Create a split between US and State data so its easier to color US in difference to state
+
+us_data <- crime_data |> filter(State == "United States")
+
+state_data <- crime_data |> filter(State != "United States")
+
+
+# Create figure for total violent crime data
+
+fig <- plot_ly() |>
+
+# U.S. trace
+    add_trace (  data = us_data,
+    x = ~Year,
+    y = ~violent_crime_rate,
+    name = "United States",
+    mode = "lines",
+    type = "scatter",
+    line = list(color = "black", width = 3)
+  ) |>
+
+# States trace
+
+    add_trace (  data = state_data,
+    x = ~Year,
+    y = ~violent_crime_rate,
+    color = ~State,
+    split = ~State,
+    mode = "lines",
+    type = "scatter",
+    opacity = 0.6,      # Make states more see through to highlight difference between US
+    showlegend = FALSE
+  ) |>
+    layout(
+    title = list(       #Create title using HTML to show different states
+      text = "Violent Crime Rates Over Time<br><sup>Six States + United States</sup>"
+    ),
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Violent Crime Rate (per 100k)")
+  ) |>
+  style(showlegend = TRUE) 
+
+fig 
+
+```
+
+
+
+```{r}
+
+# Create figure for Aggravated Assault crime rate
+
+fig_agg <- plot_ly() |>
+
+# U.S. trace
+    add_trace (  data = us_data,
+    x = ~Year,
+    y = ~aggravated_assault_rate,
+    name = "United States",
+    mode = "lines",
+    type = "scatter",
+    line = list(color = "black", width = 3)
+  ) |>
+
+# State trace
+    add_trace (  data = state_data,
+    x = ~Year,
+    y = ~aggravated_assault_rate,
+    color = ~State,
+    split = ~State,
+    mode = "lines",
+    type = "scatter",
+    opacity = 0.6,      # Make states more see through to highlight difference between US
+    showlegend = FALSE
+  ) |>
+    layout(
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Aggravated Assault Rate (per 100k)")
+  ) |>
+    style(showlegend = FALSE) # Remove legend for every graph except one to ensure no duplicated legends
+
+# Create figure for Homicide crime rate
+
+fig_hom <- plot_ly() |>
+
+# U.S. trace
+    add_trace (  data = us_data,
+    x = ~Year,
+    y = ~homicide_rate,
+    name = "United States",
+    mode = "lines",
+    type = "scatter",
+    line = list(color = "black", width = 3)
+  ) |>
+
+# State trace
+    add_trace (  data = state_data,
+    x = ~Year,
+    y = ~homicide_rate,
+    color = ~State,
+    split = ~State,
+    mode = "lines",
+    type = "scatter",
+    opacity = 0.6,      # Make states more see through to highlight difference between US
+    showlegend = FALSE
+  ) |>
+    layout(
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Homicide Rate (per 100k)")
+  ) |>
+    style(showlegend = FALSE) # Remove legend for every graph except one to ensure no duplicated legends
+
+# Create figure for Rape crime rates
+
+fig_rp <- plot_ly() |>
+
+# U.S. trace
+    add_trace (  data = us_data,
+    x = ~Year,
+    y = ~rape_rate,
+    name = "United States",
+    mode = "lines",
+    type = "scatter",
+    line = list(color = "black", width = 3)
+  ) |>
+
+# State trace
+    add_trace (  data = state_data,
+    x = ~Year,
+    y = ~rape_rate,
+    color = ~State,
+    split = ~State,
+    mode = "lines",
+    type = "scatter",
+    opacity = 0.6,      # Make states more see through to highlight difference between US
+    showlegend = FALSE
+  ) |>
+    layout(
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Rape Rate (per 100k)")
+  ) |>
+    style(showlegend = FALSE) # Remove legend for every graph except one to ensure no duplicated legends
+
+# Create figure for Robbery crime rate
+
+fig_rob <- plot_ly() |>
+
+# U.S. trace
+    add_trace (  data = us_data,
+    x = ~Year,
+    y = ~robbery_rate,
+    name = "United States",
+    mode = "lines",
+    type = "scatter",
+    line = list(color = "black", width = 3)
+  ) |>
+
+# State trace
+    add_trace (  data = state_data,
+    x = ~Year,
+    y = ~robbery_rate,
+    color = ~State,
+    split = ~State,
+    mode = "lines",
+    type = "scatter",
+    opacity = 0.6,      # Make states more see through to highlight difference between US
+    showlegend = FALSE
+  ) |>
+    layout(
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Robbery Rate (per 100k)")
+  ) |>
+    style(showlegend = TRUE) # Keep this legend as the single legend to show in plot
+
+
+# Create a 2x2 grid to put each plot from above in 
+
+combined_fig <- subplot(
+    fig_agg, fig_hom, fig_rp, fig_rob,
+    nrows=2,
+    shareX = FALSE,     
+    shareY = FALSE,     
+    titleX = FALSE,     
+    titleY = TRUE,      
+    margin = 0.06       
+) |> layout(
+    showlegend = TRUE,      #Show only 1 legend
+    legend = list(          # Orient the legend at the top horizontally
+      orientation = "h",
+      x = .5, xanchor = "center",
+      y = 1.08
+    ),
+    annotations = list(     #Create an annotation as a title for all
+      list(
+        text = "Violent Crime Breakdown by Offense Type",
+        x = 0.5,            
+        y = 1.15,           # Since it is an annotation it can go beyond the top of plot
+        xref = "paper",
+        yref = "paper",
+        showarrow = FALSE, 
+        font = list(size = 20)
+      )
+    ),
+     margin = list(t = 90) # Decrease margin so there is less white space
+  )
+
+combined_fig
+
+```

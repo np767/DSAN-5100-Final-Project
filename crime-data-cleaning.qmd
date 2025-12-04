@@ -1,5 +1,5 @@
 ---
-title: "DSAN 5100 Project. Crime Data"
+title: "DSAN 5100 Project. Crime Data Cleaning"
 author: Pavlos Baffes
 format: html
 ---
@@ -235,12 +235,47 @@ crime_df_with_pop <- na.omit(crime_df_with_pop)
 ```
 
 ```{r}
-# Add rates for crimes using population data
-# Also include a total "violent_crime_count" for a total
-
-crime_df_with_pop <- crime_df_with_pop |>
+# Include a total "violent_crime_count" for a total
+crime_df_with_pop <- crime_df_with_pop |> 
                     mutate(
-                        violent_crime_count = (aggravated_assault_count+homicide_count+rape_count+robbery_count),
+                        violent_crime_count = (aggravated_assault_count+homicide_count+rape_count+robbery_count))
+
+# Remove 1985 data since there is only 1 month
+crime_df_with_pop <- crime_df_with_pop |> filter(Year > 1985)
+```   
+
+```{r}
+# Group by state and year to get a yearly number of crimes
+
+crime_df_with_pop_annual <- crime_df_with_pop |>
+        group_by(State, Year) |>
+            summarize(
+                aggravated_assault_count = sum(aggravated_assault_count),
+                homicide_count = sum(homicide_count),
+                rape_count = sum(rape_count),
+                robbery_count = sum(robbery_count),
+                violent_crime_count = sum(violent_crime_count),
+                population_count = first(population_count))
+
+```
+
+
+```{r}
+
+# Add rates for YEARLY crime data using population data
+
+crime_df_with_pop_annual <- crime_df_with_pop_annual |>
+                    mutate(
+                        aggravated_assault_rate = (aggravated_assault_count / population_count)*100000,
+                        homicide_rate = (homicide_count / population_count)*100000,
+                        rape_rate = (rape_count / population_count)*100000,
+                        robbery_rate = (robbery_count / population_count)*100000,
+                        violent_crime_rate = (violent_crime_count / population_count)*100000)
+
+# Add rates for MONTHLY crime data using population data
+
+crime_df_with_pop_monthly <- crime_df_with_pop |>
+                    mutate(
                         aggravated_assault_rate = (aggravated_assault_count / population_count)*100000,
                         homicide_rate = (homicide_count / population_count)*100000,
                         rape_rate = (rape_count / population_count)*100000,
@@ -251,6 +286,8 @@ crime_df_with_pop <- crime_df_with_pop |>
 
 ```{r}
 
-write_csv(crime_df_with_pop, "data/processed-data/crime_data_clean.csv")
+write_csv(crime_df_with_pop_monthly, "data/processed-data/crime_data_monthly_clean.csv")
+
+write_csv(crime_df_with_pop_annual, "data/processed-data/crime_data_yearly_clean.csv")
 
 ```
