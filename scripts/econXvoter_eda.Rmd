@@ -1,0 +1,156 @@
+Load all relevant packages
+
+```{r}
+library(dplyr)
+library(purrr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(GGally)
+```
+
+Load relevant data
+
+```{r}
+econ <- read.csv("../data/processed-data/merged_economic_data.csv")
+voter <- read.csv("../data/processed-data/voter_turnout_selected_states.csv")
+```
+
+Combine the two into one dataframe
+
+```{r}
+colnames(voter)[colnames(voter) == "state"] <- "State"
+
+econ_voter <- econ %>% left_join(voter, by = c("year", "State"))
+
+econ_voter <- econ_voter %>% select(-X)
+```
+
+Filter to only election years
+
+```{r}
+econ_voter <- econ_voter %>% filter(!is.na(vep_turnout_rate))
+```
+
+Summary Statistics
+
+```{r}
+summary_stats <- econ_voter %>%
+  group_by(State) %>%
+  summarise(
+    Mean_Income = mean(Household_Income, na.rm = TRUE),
+    SD_Income = sd(Household_Income, na.rm = TRUE),
+    Mean_Unemp = mean(Unemployment_Rate, na.rm = TRUE),
+    SD_Unemp = sd(Unemployment_Rate, na.rm = TRUE),
+    Mean_HPI = mean(HPI, na.rm = TRUE),
+    SD_HPI = sd(HPI, na.rm = TRUE),
+    Mean_VEP = mean(vep_turnout_rate, na.rm = TRUE),
+    SD_VEP = sd(vep_turnout_rate, na.rm = TRUE)
+  )
+print(summary_stats)
+```
+
+Define color mappings for plotting
+
+```{r}
+color_map <- c("blue" = "blue",
+               "red" = "red",
+               "purple" = "purple")
+```
+
+
+Scatterplots: Turnout vs Economic Metrics
+```{r}
+metrics <- c("Household_Income", "Unemployment_Rate", "HPI")
+
+for (metric in metrics) {
+  p <- ggplot(econ_voter, aes(x = .data[[metric]], y = vep_turnout_rate, color = state_color)) +
+    geom_point(alpha = 0.7) +
+    geom_smooth(method = "lm", se = FALSE, color = "black") +
+    scale_x_continuous(labels = scales::comma) +
+    scale_color_manual(values = color_map) +
+    labs(title = paste("VEP Turnout vs", metric),
+         x = metric, y = "VEP Turnout Rate (%)") +
+    theme_minimal()
+  print(p)
+}
+```
+
+Correlation Matrix
+
+```{r}
+econ_voter_corr <- econ_voter %>%
+  select(Household_Income, Unemployment_Rate, HPI, vep_turnout_rate) %>%
+  cor(use = "pairwise.complete.obs")
+
+corrplot::corrplot(econ_voter_corr, method = "number", type = "upper")
+```
+
+Grouped Summary by State Color
+
+```{r}
+numeric_vars <- econ_voter %>% 
+  select(Household_Income, Unemployment_Rate, HPI, vep_turnout_rate)
+
+GGally::ggpairs(numeric_vars, 
+                aes(color = econ_voter$state_color, alpha = 0.6), progress = F)
+```
+
+Violin/Box Plots
+
+```{r}
+# Violin plot
+ggplot(econ_voter, aes(x = state_color, y = vep_turnout_rate, fill = state_color)) +
+  geom_violin(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.5) +
+  scale_fill_manual(values = color_map) +
+  labs(
+    title = "VEP Turnout Distribution by State Political Lean",
+    x = "State Political Lean",
+    y = "VEP Turnout Rate (%)"
+  ) +
+  theme_minimal()
+
+# Boxplot
+ggplot(econ_voter, aes(x = state_color, y = vep_turnout_rate, fill = state_color)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.5) +
+  scale_fill_manual(values = color_map) +
+  labs(
+    title = "VEP Turnout Distribution by State Political Lean",
+    x = "State Political Lean",
+    y = "VEP Turnout Rate (%)"
+  ) +
+  theme_minimal()
+```
+
+Faceted Plots
+```{r}
+ggplot(econ_voter, aes(x = Household_Income, y = vep_turnout_rate)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~state_color) +
+  scale_x_continuous(labels = scales::comma) +
+  labs(title = "VEP Turnout vs Household Income by State Political Lean",
+       x = "Household Income",
+       y = "VEP Turnout Rate (%)") +
+  theme_minimal()
+
+ggplot(econ_voter, aes(x = Unemployment_Rate, y = vep_turnout_rate)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~state_color) +
+  labs(title = "VEP Turnout vs Unemployment Rate by State Political Lean",
+       x = "Unemployment Rate (%)",
+       y = "VEP Turnout Rate (%)") +
+  theme_minimal()
+
+ggplot(econ_voter, aes(x = HPI, y = vep_turnout_rate)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~state_color) +
+  labs(title = "VEP Turnout vs Housing Price Index by State Political Lean",
+       x = "Housing Price Index",
+       y = "VEP Turnout Rate (%)") +
+  theme_minimal()
+```

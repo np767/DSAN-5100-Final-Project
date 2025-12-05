@@ -174,7 +174,7 @@ plot_metric_corr(econ_all, "HPI", "Housing Price Index")
 Growth/Percentage Change
 
 ```{r}
-#Create pct_change columns for each metrix
+#Create pct_change columns for each metric
 econ_all <- econ_all %>%
   group_by(State) %>%
   mutate(
@@ -192,4 +192,10 @@ ggplot(econ_all, aes(x = year, y = HPI_Pct_Change, color = State)) +
   geom_line(size = 1) +
   labs(title = "Housing Price Index % Change Since First Year",
        x = "Year", y = "Percent Change", color = "State")
+```
+
+Final save
+
+```{r}
+write.csv(econ_all, "../data/processed-data/merged_economic_data.csv")
 ```
