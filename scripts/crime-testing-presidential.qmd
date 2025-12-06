@@ -326,3 +326,12 @@ boot_diff <- replicate(5000, {
 ci <- quantile(boot_diff, c(0.025, 0.975))
 ci
 ```
+
+```{r}
+
+hist(boot_diff, breaks = 30,
+     main = "Bootstrap Distribution of Mean Presidential Turnout Difference (Low – High Crime Era)",
+     xlab = "Difference in Means")
+abline(v = ci, col = "red", lty = 2)
+
+```
