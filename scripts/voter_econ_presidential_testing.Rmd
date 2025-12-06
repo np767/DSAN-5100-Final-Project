@@ -48,171 +48,120 @@ knitr::kable(summary_stats, digits = 4, caption = "Descriptive Statistics for Ec
 
 ## Test 1a: One-Way ANOVA (VEP Turnout by Income Group)
 
-**Hypotheses:**
-
-- **H0**: Mean VEP turnout is equal across the three income groups (low, mid, high).  
-- **H1**: At least one income group has a different mean VEP turnout.  
-- **Significance level**: α = 0.05
 ```{r}
-# Categorize into tertiles
-
 econ_voter <- econ_voter %>%
-mutate(income_group = ntile(Household_Income, 3))  # 1 = low, 2 = mid, 3 = high
-
-# Run ANOVA
+mutate(income_group = ntile(Household_Income, 3))
 
 anova_model_1 <- aov(normalized_vep_turnout ~ factor(income_group), data = econ_voter)
-anova_results_1 <- summary(anova_model_1)
-anova_results_1
-```
-## Test 1b: One-Way ANOVA (VEP Turnout by Unemployment Group)
-
-**Hypotheses:**
-
-- **H0**: Mean VEP turnout is equal across the three unemployment groups (low, mid, high).  
-- **H1**: At least one unemployment group has a different mean VEP turnout.  
-- **Significance level**: α = 0.05
-```{r}
-# Categorize into tertiles
-
-econ_voter <- econ_voter %>%
-mutate(unemployment_group = ntile(Unemployment_Rate, 3))  # 1 = low, 2 = mid, 3 = high
-
-# Run ANOVA
-
-anova_model_2 <- aov(normalized_vep_turnout ~ factor(unemployment_group), data = econ_voter)
-anova_results_2 <- summary(anova_model_2)
-anova_results_2
-```
-## Test 1c: One-Way ANOVA (VEP Turnout by HPI)
-
-**Hypotheses:**
-
-- **H0**: Mean VEP turnout is equal across the three HPI groups (low, mid, high).  
-- **H1**: At least one HPI group has a different mean VEP turnout.  
-- **Significance level**: α = 0.05
-```{r}
-# Categorize into tertiles
-
-econ_voter <- econ_voter %>%
-mutate(hpi_group = ntile(HPI, 3))  # 1 = low, 2 = mid, 3 = high
-
-# Run ANOVA
-
-anova_model_3 <- aov(normalized_vep_turnout ~ factor(hpi_group), data = econ_voter)
-anova_results_3 <- summary(anova_model_3)
-anova_results_3
+anova_summary_1 <- summary(anova_model_1)
+anova_summary_1
 ```
 
----
+## Pairwise T-Tests for Income Groups
 
-## Test 2a: Independent Samples T-Tests (Pairwise Comparisons - Income Group)
-
-Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
 ```{r}
-# Extract VEP turnout for each income group
+alpha_bonf <- 0.05 / 3
 
 low_income <- econ_voter %>% filter(income_group == 1) %>% pull(normalized_vep_turnout)
 mid_income <- econ_voter %>% filter(income_group == 2) %>% pull(normalized_vep_turnout)
 high_income <- econ_voter %>% filter(income_group == 3) %>% pull(normalized_vep_turnout)
 
-# Bonferroni-corrected alpha
-
-alpha_bonf <- 0.05 / 3
-
-# Pairwise t-tests
-
-ttest_low_mid <- t.test(low_income, mid_income, var.equal = FALSE)
-ttest_low_high <- t.test(low_income, high_income, var.equal = FALSE)
-ttest_mid_high <- t.test(mid_income, high_income, var.equal = FALSE)
-
-# Print results neatly
-
-t_test_results <- tibble(
+tt_income <- tibble(
 Comparison = c("Low vs Mid", "Low vs High", "Mid vs High"),
-t_statistic = c(ttest_low_mid$statistic, ttest_low_high$statistic, ttest_mid_high$statistic),
-p_value = c(ttest_low_mid$p.value, ttest_low_high$p.value, ttest_mid_high$p.value),
-Decision = c(ifelse(ttest_low_mid$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
-ifelse(ttest_low_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
-ifelse(ttest_mid_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"))
+t_statistic = c(t.test(low_income, mid_income)$statistic,
+t.test(low_income, high_income)$statistic,
+t.test(mid_income, high_income)$statistic),
+p_value = c(t.test(low_income, mid_income)$p.value,
+t.test(low_income, high_income)$p.value,
+t.test(mid_income, high_income)$p.value),
+Decision = c(ifelse(t.test(low_income, mid_income)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+ifelse(t.test(low_income, high_income)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+ifelse(t.test(mid_income, high_income)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0")),
+Mean_Diff = c(round(mean(low_income) - mean(mid_income),2),
+round(mean(low_income) - mean(high_income),2),
+round(mean(mid_income) - mean(high_income),2))
 )
 
-knitr::kable(t_test_results, digits = 4, caption = "Pairwise T-Tests with Bonferroni Correction")
+knitr::kable(tt_income, digits = 4, caption = "Pairwise T-Tests: Income Groups with Mean Differences")
 ```
-## Test 2b: Independent Samples T-Tests (Pairwise Comparisons - Unemployment Group)
 
-Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
+## Test 1b: One-Way ANOVA (VEP Turnout by Unemployment Rate)
+
 ```{r}
-# Extract VEP turnout for each income group
+econ_voter <- econ_voter %>%
+mutate(unemployment_group = ntile(Unemployment_Rate, 3))
 
+anova_model_2 <- aov(normalized_vep_turnout ~ factor(unemployment_group), data = econ_voter)
+anova_summary_2 <- summary(anova_model_2)
+anova_summary_2
+```
+
+## Pairwise T-Tests for Unemployment Groups
+
+```{r}
 low_unemp <- econ_voter %>% filter(unemployment_group == 1) %>% pull(normalized_vep_turnout)
 mid_unemp <- econ_voter %>% filter(unemployment_group == 2) %>% pull(normalized_vep_turnout)
 high_unemp <- econ_voter %>% filter(unemployment_group == 3) %>% pull(normalized_vep_turnout)
 
-# Bonferroni-corrected alpha
-
-alpha_bonf <- 0.05 / 3
-
-# Pairwise t-tests
-
-ttest_low_mid <- t.test(low_unemp, mid_unemp, var.equal = FALSE)
-ttest_low_high <- t.test(low_unemp, high_unemp, var.equal = FALSE)
-ttest_mid_high <- t.test(mid_unemp, high_unemp, var.equal = FALSE)
-
-# Print results neatly
-
-t_test_results <- tibble(
+tt_unemp <- tibble(
 Comparison = c("Low vs Mid", "Low vs High", "Mid vs High"),
-t_statistic = c(ttest_low_mid$statistic, ttest_low_high$statistic, ttest_mid_high$statistic),
-p_value = c(ttest_low_mid$p.value, ttest_low_high$p.value, ttest_mid_high$p.value),
-Decision = c(ifelse(ttest_low_mid$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
-ifelse(ttest_low_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
-ifelse(ttest_mid_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"))
+t_statistic = c(t.test(low_unemp, mid_unemp)$statistic,
+t.test(low_unemp, high_unemp)$statistic,
+t.test(mid_unemp, high_unemp)$statistic),
+p_value = c(t.test(low_unemp, mid_unemp)$p.value,
+t.test(low_unemp, high_unemp)$p.value,
+t.test(mid_unemp, high_unemp)$p.value),
+Decision = c(ifelse(t.test(low_unemp, mid_unemp)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+ifelse(t.test(low_unemp, high_unemp)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+ifelse(t.test(mid_unemp, high_unemp)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0")),
+Mean_Diff = c(round(mean(low_unemp) - mean(mid_unemp),2),
+round(mean(low_unemp) - mean(high_unemp),2),
+round(mean(mid_unemp) - mean(high_unemp),2))
 )
 
-knitr::kable(t_test_results, digits = 4, caption = "Pairwise T-Tests with Bonferroni Correction")
+knitr::kable(tt_unemp, digits = 4, caption = "Pairwise T-Tests: Unemployment Groups with Mean Differences")
 ```
 
-## Test 2c: Independent Samples T-Tests (Pairwise Comparisons - HPI Group)
+## Test 1c: One-Way ANOVA (VEP Turnout by HPI)
 
-Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
 ```{r}
-# Extract VEP turnout for each income group
+econ_voter <- econ_voter %>%
+mutate(hpi_group = ntile(HPI, 3))
 
+anova_model_3 <- aov(normalized_vep_turnout ~ factor(hpi_group), data = econ_voter)
+anova_summary_3 <- summary(anova_model_3)
+anova_summary_3
+```
+
+## Pairwise T-Tests for HPI Groups
+
+```{r}
 low_hpi <- econ_voter %>% filter(hpi_group == 1) %>% pull(normalized_vep_turnout)
 mid_hpi <- econ_voter %>% filter(hpi_group == 2) %>% pull(normalized_vep_turnout)
 high_hpi <- econ_voter %>% filter(hpi_group == 3) %>% pull(normalized_vep_turnout)
 
-# Bonferroni-corrected alpha
-
-alpha_bonf <- 0.05 / 3
-
-# Pairwise t-tests
-
-ttest_low_mid <- t.test(low_hpi, mid_hpi, var.equal = FALSE)
-ttest_low_high <- t.test(low_hpi, high_hpi, var.equal = FALSE)
-ttest_mid_high <- t.test(mid_hpi, high_hpi, var.equal = FALSE)
-
-# Print results neatly
-
-t_test_results <- tibble(
+tt_hpi <- tibble(
 Comparison = c("Low vs Mid", "Low vs High", "Mid vs High"),
-t_statistic = c(ttest_low_mid$statistic, ttest_low_high$statistic, ttest_mid_high$statistic),
-p_value = c(ttest_low_mid$p.value, ttest_low_high$p.value, ttest_mid_high$p.value),
-Decision = c(ifelse(ttest_low_mid$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
-ifelse(ttest_low_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
-ifelse(ttest_mid_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"))
+t_statistic = c(t.test(low_hpi, mid_hpi)$statistic,
+t.test(low_hpi, high_hpi)$statistic,
+t.test(mid_hpi, high_hpi)$statistic),
+p_value = c(t.test(low_hpi, mid_hpi)$p.value,
+t.test(low_hpi, high_hpi)$p.value,
+t.test(mid_hpi, high_hpi)$p.value),
+Decision = c(ifelse(t.test(low_hpi, mid_hpi)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+ifelse(t.test(low_hpi, high_hpi)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+ifelse(t.test(mid_hpi, high_hpi)$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0")),
+Mean_Diff = c(round(mean(low_hpi) - mean(mid_hpi),2),
+round(mean(low_hpi) - mean(high_hpi),2),
+round(mean(mid_hpi) - mean(high_hpi),2))
 )
 
-knitr::kable(t_test_results, digits = 4, caption = "Pairwise T-Tests with Bonferroni Correction")
+knitr::kable(tt_hpi, digits = 4, caption = "Pairwise T-Tests: HPI Groups with Mean Differences")
 ```
 
----
-
 ## Summary Table
-```{r}
-# Create a summary table for ANOVA and Pairwise T-Tests
 
+```{r}
 summary_results <- tibble(
 Test = c(
 "ANOVA: Income Groups",
@@ -223,30 +172,30 @@ Test = c(
 "Pairwise T-Tests: HPI Groups"
 ),
 Statistic = c(
-paste0("F=", round(anova_results_1[[1]]["factor(income_group)", "F value"], 4)),
+paste0("F=", round(anova_summary_1[[1]]["factor(income_group)", "F value"], 4)),
 "See table above",
-paste0("F=", round(anova_results_2[[1]]["factor(unemployment_group)", "F value"], 4)),
+paste0("F=", round(anova_summary_2[[1]]["factor(unemployment_group)", "F value"], 4)),
 "See table above",
-paste0("F=", round(anova_results_3[[1]]["factor(hpi_group)", "F value"], 4)),
+paste0("F=", round(anova_summary_3[[1]]["factor(hpi_group)", "F value"], 4)),
 "See table above"
 ),
 p_value = c(
-anova_results_1[[1]]["factor(income_group)", "Pr(>F)"],
+anova_summary_1[[1]]["factor(income_group)", "Pr(>F)"],
 "See table above",
-anova_results_2[[1]]["factor(unemployment_group)", "Pr(>F)"],
+anova_summary_2[[1]]["factor(unemployment_group)", "Pr(>F)"],
 "See table above",
-anova_results_3[[1]]["factor(hpi_group)", "Pr(>F)"],
+anova_summary_3[[1]]["factor(hpi_group)", "Pr(>F)"],
 "See table above"
 ),
 Decision = c(
-ifelse(anova_results_1[[1]]["factor(income_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
+ifelse(anova_summary_1[[1]]["factor(income_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
 "See table above",
-ifelse(anova_results_2[[1]]["factor(unemployment_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
+ifelse(anova_summary_2[[1]]["factor(unemployment_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
 "See table above",
-ifelse(anova_results_3[[1]]["factor(hpi_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
+ifelse(anova_summary_3[[1]]["factor(hpi_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
 "See table above"
 )
 )
 
-knitr::kable(summary_results, caption = "Summary of ANOVA and Pairwise T-Tests: Economic Metrics vs Normalized VEP Turnout (Presidential Elections)")
+knitr::kable(summary_results, caption = "Summary of ANOVA and Pairwise T-Tests: Economic Metrics vs Normalized VEP Turnout")
 ```
