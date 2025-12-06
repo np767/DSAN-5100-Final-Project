@@ -1,0 +1,277 @@
+---
+title: "Voter Turnout Hypothesis Testing"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Load Libraries and Data
+```{r load-data}
+library(tidyverse)
+
+
+df <- read_csv("../data/processed-data/voter_turnout_selected_states.csv")
+
+```
+
+## Descriptive Statistics
+```{r descriptive-stats}
+
+summary_stats <- df %>%
+    group_by(state_color) %>%
+    summarise(
+        n = n(),
+        mean = mean(vep_turnout_rate),
+        sd = sd(vep_turnout_rate),
+        min = min(vep_turnout_rate),
+        max = max(vep_turnout_rate),
+        .groups = "drop"
+    )
+
+summary_stats
+
+```
+
+```{r descriptive-stats-election}
+summary_stats_election <- df %>%
+    group_by(election_type) %>%
+    summarise(
+        n = n(),
+        mean = mean(vep_turnout_rate),
+        sd = sd(vep_turnout_rate),
+        min = min(vep_turnout_rate),
+        max = max(vep_turnout_rate),
+        .groups = "drop"
+    )
+
+summary_stats_election
+```
+
+
+```{r boxplot}
+ggplot(df, aes(x = state_color, y = vep_turnout_rate, fill = state_color)) +
+    geom_boxplot(alpha = 0.7) +
+    scale_fill_manual(values = c("blue" = "#2166ac", "purple" = "#7b3294", "red" = "#b2182b")) +
+    labs(
+        title = "Voter Turnout by State Political Category",
+        x = "State Category", y = "VEP Turnout Rate"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "none")
+```
+
+```{r boxplot-election}
+ggplot(df, aes(x = election_type, y = vep_turnout_rate, fill = election_type)) +
+    geom_boxplot(alpha = 0.7) +
+    scale_fill_manual(values = c("Presidential" = "#2ca25f", "Midterm" = "#e34a33")) +
+    labs(
+        title = "Voter Turnout by Election Type",
+        x = "Election Type", y = "VEP Turnout Rate"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "none")
+```
+
+
+---
+
+## One-Way ANOVA
+
+**Hypotheses:**
+
+- H0: Mean turnout is equal across all state categories
+- H1: At least one group mean differs
+- Significance level: α = 0.05
+```{r anova}
+
+anova_model <- aov(vep_turnout_rate ~ state_color, data = df)
+anova_results <- summary(anova_model)
+print(anova_results)
+
+
+f_stat <- anova_results[[1]]["state_color", "F value"]
+p_value_anova <- anova_results[[1]]["state_color", "Pr(>F)"]
+
+cat("F-statistic:", round(f_stat, 4), "\n")
+cat("p-value:", round(p_value_anova, 6), "\n")
+
+
+if (p_value_anova < 0.05) {
+    cat("Conclusion: REJECT H0 - Significant difference in mean turnout\n")
+} else {
+    cat("Conclusion: FAIL TO REJECT H0 - No significant difference\n")
+}
+```
+
+---
+
+## Independent T-Tests (Pairwise Comparisons)
+
+Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
+```{r extract-groups}
+blue_turnout <- df %>%
+    filter(state_color == "blue") %>%
+    pull(vep_turnout_rate)
+red_turnout <- df %>%
+    filter(state_color == "red") %>%
+    pull(vep_turnout_rate)
+purple_turnout <- df %>%
+    filter(state_color == "purple") %>%
+    pull(vep_turnout_rate)
+
+alpha_bonferroni <- 0.05 / 3 # To avoid Type I error
+```
+
+### T-Test 2a: Red States vs Blue States
+
+```{r ttest-red-blue}
+ttest_rb <- t.test(red_turnout, blue_turnout, var.equal = FALSE)
+
+cat("Red mean:", round(mean(red_turnout), 4), "| Blue mean:", round(mean(blue_turnout), 4), "\n")
+cat("t-statistic:", round(ttest_rb$statistic, 4), "| p-value:", round(ttest_rb$p.value, 6), "\n")
+cat("Conclusion:", ifelse(ttest_rb$p.value < alpha_bonferroni, "REJECT H0", "FAIL TO REJECT H0"), "\n")
+```
+
+### T-Test 2b: Red States vs Purple States
+
+```{r ttest-red-purple}
+ttest_rp <- t.test(red_turnout, purple_turnout, var.equal = FALSE)
+
+cat("Red mean:", round(mean(red_turnout), 4), "| Purple mean:", round(mean(purple_turnout), 4), "\n")
+cat("t-statistic:", round(ttest_rp$statistic, 4), "| p-value:", round(ttest_rp$p.value, 6), "\n")
+cat("Conclusion:", ifelse(ttest_rp$p.value < alpha_bonferroni, "REJECT H0", "FAIL TO REJECT H0"), "\n")
+```
+
+### T-Test 2c: Blue States vs Purple States
+```{r ttest-blue-purple}
+ttest_bp <- t.test(blue_turnout, purple_turnout, var.equal = FALSE)
+
+cat("Blue mean:", round(mean(blue_turnout), 4), "| Purple mean:", round(mean(purple_turnout), 4), "\n")
+cat("t-statistic:", round(ttest_bp$statistic, 4), "| p-value:", round(ttest_bp$p.value, 6), "\n")
+cat("Conclusion:", ifelse(ttest_bp$p.value < alpha_bonferroni, "REJECT H0", "FAIL TO REJECT H0"), "\n")
+```
+
+---
+
+
+---
+
+## T-Test for Election Type
+
+**Hypotheses:**
+
+- H0: Mean turnout is equal for Presidential and Midterm elections
+- H1: Mean turnout differs
+- Significance level: α = 0.05
+
+```{r ttest-election}
+ttest_election <- t.test(vep_turnout_rate ~ election_type, data = df)
+
+cat("Mean by Group:\n")
+print(ttest_election$estimate)
+cat("\n----------------------------------------\n")
+cat("t-statistic:", round(ttest_election$statistic, 4), "| p-value:", round(ttest_election$p.value, 6), "\n")
+cat("----------------------------------------\n")
+
+if (ttest_election$p.value < 0.05) {
+    cat("Conclusion: REJECT H0 - Significant difference in mean turnout\n")
+} else {
+    cat("Conclusion: FAIL TO REJECT H0 - No significant difference\n")
+}
+```
+
+---
+
+## Test 3: Chi-Square Tests
+
+### Chi-Square 3a: Election Type vs Turnout Category
+```{r chisq-election}
+# Create turnout category
+median_turnout <- median(df$vep_turnout_rate)
+df <- df %>%
+    mutate(turnout_category = ifelse(vep_turnout_rate >= median_turnout, "High", "Low"))
+
+
+contingency_election <- table(df$election_type, df$turnout_category)
+cat("Contingency Table:\n")
+print(contingency_election)
+
+
+
+chisq_election <- chisq.test(contingency_election)
+cat("\nExpected Frequencies:\n")
+print(round(chisq_election$expected, 2))
+
+
+
+cat("\nStandardized Residuals (Positive > 2 means observed > expected significantly):\n")
+print(round(chisq_election$stdres, 2))
+
+cat("\n----------------------------------------\n")
+cat("Chi-square:", round(chisq_election$statistic, 4), "| df:", chisq_election$parameter, "\n")
+cat("p-value:", round(chisq_election$p.value, 6), "\n")
+cat("Conclusion:", ifelse(chisq_election$p.value < 0.05, "NOT Independent", "Independent"), "\n")
+```
+
+### Chi-Square 3b: Turnout Level (High/Low) vs State Category
+```{r chisq-turnout}
+# Ensure turnout category exists
+median_turnout <- median(df$vep_turnout_rate)
+df <- df %>%
+    mutate(turnout_category = ifelse(vep_turnout_rate >= median_turnout, "High", "Low"))
+
+contingency_turnout <- table(df$turnout_category, df$state_color)
+cat("Contingency Table:\n")
+print(contingency_turnout)
+
+chisq_turnout <- chisq.test(contingency_turnout)
+
+cat("\nStandardized Residuals:\n")
+print(round(chisq_turnout$stdres, 2))
+
+cat("\n----------------------------------------\n")
+cat("Chi-square:", round(chisq_turnout$statistic, 4), "| df:", chisq_turnout$parameter, "\n")
+cat("p-value:", round(chisq_turnout$p.value, 6), "\n")
+cat("Conclusion:", ifelse(chisq_turnout$p.value < 0.05, "NOT Independent", "Independent"), "\n")
+```
+
+---
+
+## Summary Table
+```{r summary-table}
+summary_results <- tibble(
+    Test = c(
+        "ANOVA", "Red vs Blue", "Red vs Purple", "Blue vs Purple",
+        "Election Type (T-Test)",
+        "Election x Turnout", "Turnout x State"
+    ),
+    Statistic = c(
+        paste0("F=", round(f_stat, 4)),
+        paste0("t=", round(ttest_rb$statistic, 4)),
+        paste0("t=", round(ttest_rp$statistic, 4)),
+        paste0("t=", round(ttest_bp$statistic, 4)),
+        paste0("t=", round(ttest_election$statistic, 4)),
+        paste0("X2=", round(chisq_election$statistic, 4)),
+        paste0("X2=", round(chisq_turnout$statistic, 4))
+    ),
+    p_value = round(c(
+        p_value_anova, ttest_rb$p.value, ttest_rp$p.value,
+        ttest_bp$p.value, ttest_election$p.value, chisq_election$p.value, chisq_turnout$p.value
+    ), 6),
+    Decision = c(
+        ifelse(p_value_anova < 0.05, "Sig", "Not Sig"),
+        ifelse(ttest_rb$p.value < alpha_bonferroni, "Sig", "Not Sig"),
+        ifelse(ttest_rp$p.value < alpha_bonferroni, "Sig", "Not Sig"),
+        ifelse(ttest_bp$p.value < alpha_bonferroni, "Sig", "Not Sig"),
+        ifelse(ttest_election$p.value < 0.05, "Sig", "Not Sig"),
+        ifelse(chisq_election$p.value < 0.05, "Dependent", "Independent"),
+        ifelse(chisq_turnout$p.value < 0.05, "Dependent", "Independent")
+    )
+)
+
+knitr::kable(summary_results, caption = "Summary of All Hypothesis Tests")
+```
