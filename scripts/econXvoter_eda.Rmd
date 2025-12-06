@@ -59,6 +59,70 @@ color_map <- c("blue" = "blue",
 ```
 
 
+```{r}
+# 1. Voter Turnout vs Unemployment Rate by Party
+ggplot(econ_voter, aes(x = state_color, y = Unemployment_Rate, fill = state_color)) +
+  geom_boxplot() +
+  labs(title = "Unemployment Rate by Party",
+       x = "Party",
+       y = "Unemployment Rate") +
+  scale_fill_manual(values = color_map) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# 2. Voter Turnout vs HPI by Party
+ggplot(econ_voter, aes(x = state_color, y = HPI, fill = state_color)) +
+  geom_boxplot() +
+  labs(title = "HPI by Party",
+       x = "Party",
+       y = "HPI") +
+  scale_fill_manual(values = color_map) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# 3. Voter Turnout vs Household Income by Party
+ggplot(econ_voter, aes(x = state_color, y = Household_Income, fill = state_color)) +
+  geom_boxplot() +
+  labs(title = "Household Income by Party",
+       x = "Party",
+       y = "Household Income") +
+  scale_fill_manual(values = color_map) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+# Ensure year is numeric
+econ_voter <- econ_voter %>% mutate(year = as.numeric(year))
+
+# 1. Unemployment Rate plot
+ggplot(econ_voter, aes(x = year, y = Unemployment_Rate, color = State)) +
+  geom_line(size = 1) +
+  labs(title = "Unemployment Rate Over Time by State",
+       x = "Year",
+       y = "Unemployment Rate") +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title = element_blank())
+
+# 2. HPI plot
+ggplot(econ_voter, aes(x = year, y = HPI, color = State)) +
+  geom_line(size = 1) +
+  labs(title = "HPI Over Time by State",
+       x = "Year",
+       y = "Housing Price Index (HPI)") +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title = element_blank())
+
+# 3. Household Income plot
+ggplot(econ_voter, aes(x = year, y = Household_Income, color = State)) +
+  geom_line(size = 1) +
+  labs(title = "Household Income Over Time by State",
+       x = "Year",
+       y = "Household Income") +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.title = element_blank())
+```
+
 Scatterplots: Turnout vs Economic Metrics
 ```{r}
 metrics <- c("Household_Income", "Unemployment_Rate", "HPI")
