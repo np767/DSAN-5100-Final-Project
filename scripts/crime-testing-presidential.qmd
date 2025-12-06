@@ -1,0 +1,303 @@
+---
+title: "Voter Turnout and Crime hypothesis testing"
+format:
+  html:
+    embed-resources: true
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Load Libraries and Data
+```{r}
+library(tidyverse)
+
+crime <- read.csv("../data/processed-data/crime_data_yearly_clean.csv")
+voter <- read.csv("../data/processed-data/voter_turnout_selected_states.csv")
+
+
+crime <- crime %>%
+  filter(!(State == "Florida" & Year == 1988))
+
+# Rename column to match
+
+colnames(voter)[colnames(voter) == "state"] <- "State"
+
+colnames(voter)[colnames(voter) == "year"] <- "Year"
+
+# Join datasets
+
+crime_voter <- crime %>%
+left_join(voter, by = c("Year", "State")) %>%
+filter(!is.na(normalized_vep_turnout))  # keep only election years
+
+crime_voter <- mutate(crime_voter, normalized_vep_turnout=normalized_vep_turnout*100)
+crime_voter <- crime_voter %>% filter(election_type == "presidential")
+```
+
+## Descriptive Statistics
+```{r}
+crime_metrics <- c("aggravated_assault_rate", "homicide_rate", "rape_rate","robbery_rate", "violent_crime_rate")
+
+summary_stats <- crime_voter %>%
+select(all_of(crime_metrics), normalized_vep_turnout) %>%
+summarise(across(everything(),
+list(mean = ~mean(.x, na.rm = TRUE),
+sd = ~sd(.x, na.rm = TRUE),
+min = ~min(.x, na.rm = TRUE),
+max = ~max(.x, na.rm = TRUE))))
+knitr::kable(summary_stats, digits = 4, caption = "Descriptive Statistics for Crime metrics and VEP Turnout")
+```
+
+---
+
+## Test 1a: One-Way ANOVA (VEP Turnout by Violent Crime Rate Group)
+
+**Hypotheses:**
+
+- **H0**: Mean VEP turnout is equal across the three violent crime groups (low, mid, high).  
+- **H1**: At least one violent crime group has a different mean VEP turnout.  
+- **Significance level**: α = 0.05
+```{r, error=TRUE}
+# Categorize into tertiles
+
+crime_voter <- crime_voter %>%
+mutate(violent_crime_group = ntile(violent_crime_rate, 3))  # 1 = low, 2 = mid, 3 = high
+
+# Run ANOVA
+
+anova_model_1 <- aov(normalized_vep_turnout ~ factor(violent_crime_group), data = crime_voter)
+anova_results_1 <- summary(anova_model_1)
+anova_results_1
+```
+
+## Test 1b: One-Way ANOVA (VEP Turnout by Aggravated Assault Rate Group)
+
+**Hypotheses:**
+
+- **H0**: Mean VEP turnout is equal across the three aggravated assault groups (low, mid, high).  
+- **H1**: At least one aggravated assault group has a different mean VEP turnout.  
+- **Significance level**: α = 0.05
+```{r, error=TRUE}
+# Categorize into tertiles
+
+crime_voter <- crime_voter %>%
+mutate(aggravated_assault_group = ntile(aggravated_assault_rate, 3))  # 1 = low, 2 = mid, 3 = high
+
+# Run ANOVA
+
+anova_model_2 <- aov(normalized_vep_turnout ~ factor(aggravated_assault_group), data = crime_voter)
+anova_results_2 <- summary(anova_model_2)
+anova_results_2
+```
+
+## Test 1c: One-Way ANOVA (VEP Turnout by Homicide Rate Group)
+
+**Hypotheses:**
+
+- **H0**: Mean VEP turnout is equal across the three homicide groups (low, mid, high).  
+- **H1**: At least one homicide group has a different mean VEP turnout.  
+- **Significance level**: α = 0.05
+```{r, error=TRUE}
+# Categorize into tertiles
+
+crime_voter <- crime_voter %>%
+mutate(homicide_group = ntile(homicide_rate, 3))  # 1 = low, 2 = mid, 3 = high
+
+# Run ANOVA
+
+anova_model_3 <- aov(normalized_vep_turnout ~ factor(homicide_group), data = crime_voter)
+anova_results_3 <- summary(anova_model_3)
+anova_results_3
+```
+
+## Test 1d: One-Way ANOVA (VEP Turnout by Rape Rate Group)
+
+**Hypotheses:**
+
+- **H0**: Mean VEP turnout is equal across the three r*pe groups (low, mid, high).  
+- **H1**: At least one r*pe group has a different mean VEP turnout.  
+- **Significance level**: α = 0.05
+
+```{r, error=TRUE}
+# Categorize into tertiles
+
+crime_voter <- crime_voter %>%
+mutate(rape_group = ntile(rape_rate, 3))  # 1 = low, 2 = mid, 3 = high
+
+# Run ANOVA
+
+anova_model_4 <- aov(normalized_vep_turnout ~ factor(rape_group), data = crime_voter)
+anova_results_4 <- summary(anova_model_4)
+anova_results_4
+```
+
+
+## Test 1e: One-Way ANOVA (VEP Turnout by Robbery Rate Group)
+
+**Hypotheses:**
+
+- **H0**: Mean VEP turnout is equal across the three robbery groups (low, mid, high).  
+- **H1**: At least one robbery group has a different mean VEP turnout.  
+- **Significance level**: α = 0.05
+
+```{r, error=TRUE}
+# Categorize into tertiles
+
+crime_voter <- crime_voter %>%
+mutate(robbery_group = ntile(robbery_rate, 3))  # 1 = low, 2 = mid, 3 = high
+
+# Run ANOVA
+
+anova_model_5 <- aov(normalized_vep_turnout ~ factor(robbery_group), data = crime_voter)
+anova_results_5 <- summary(anova_model_5)
+anova_results_5
+```
+
+---
+
+## Test 2a: Independent Samples T-Tests (Pairwise Comparisons - Violent Crime Rate Group)
+
+Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
+```{r, error=TRUE}
+# Extract VEP turnout for each Violent Crime Rate
+
+low_violent_crime_rate <- crime_voter %>% filter(violent_crime_group == 1) %>% pull(normalized_vep_turnout)
+mid_violent_crime_rate <- crime_voter %>% filter(violent_crime_group == 2) %>% pull(normalized_vep_turnout)
+high_violent_crime_rate <- crime_voter %>% filter(violent_crime_group == 3) %>% pull(normalized_vep_turnout)
+
+# Bonferroni-corrected alpha
+
+alpha_bonf <- 0.05 / 3
+
+# Pairwise t-tests
+
+ttest_low_mid <- t.test(low_violent_crime_rate, mid_violent_crime_rate, var.equal = FALSE)
+ttest_low_high <- t.test(low_violent_crime_rate, high_violent_crime_rate, var.equal = FALSE)
+ttest_mid_high <- t.test(mid_violent_crime_rate, high_violent_crime_rate, var.equal = FALSE)
+
+# Print results neatly
+
+t_test_results <- tibble(
+  Comparison = c("Low vs Mid", "Low vs High", "Mid vs High"),
+  
+  # Mean differences
+  mean_diff = c(
+    mean(low_violent_crime_rate, na.rm = TRUE) - mean(mid_violent_crime_rate, na.rm = TRUE),
+    mean(low_violent_crime_rate, na.rm = TRUE) - mean(high_violent_crime_rate, na.rm = TRUE),
+    mean(mid_violent_crime_rate, na.rm = TRUE) - mean(high_violent_crime_rate, na.rm = TRUE)
+  ),
+  
+  t_statistic = c(ttest_low_mid$statistic,
+                  ttest_low_high$statistic,
+                  ttest_mid_high$statistic),
+  
+  p_value = c(ttest_low_mid$p.value,
+              ttest_low_high$p.value,
+              ttest_mid_high$p.value),
+  
+  Decision = c(
+    ifelse(ttest_low_mid$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+    ifelse(ttest_low_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+    ifelse(ttest_mid_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0")
+  )
+)
+
+knitr::kable(t_test_results, digits = 4, caption = "Pairwise T-Tests with Bonferroni Correction")
+```
+
+## Test 2b: Independent Samples T-Tests (Pairwise Comparisons - Robbery Rate Group)
+
+Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
+```{r, error=TRUE}
+# Extract VEP turnout for each Robbery rate group
+
+low_rob <- crime_voter %>% filter(robbery_group == 1) %>% pull(normalized_vep_turnout)
+mid_rob <- crime_voter %>% filter(robbery_group == 2) %>% pull(normalized_vep_turnout)
+high_rob <- crime_voter %>% filter(robbery_group == 3) %>% pull(normalized_vep_turnout)
+
+# Bonferroni-corrected alpha
+
+alpha_bonf <- 0.05 / 3
+
+# Pairwise t-tests
+
+ttest_low_mid <- t.test(low_rob, mid_rob, var.equal = FALSE)
+ttest_low_high <- t.test(low_rob, high_rob, var.equal = FALSE)
+ttest_mid_high <- t.test(mid_rob, high_rob, var.equal = FALSE)
+
+# Print results neatly
+
+t_test_results <- tibble(
+  Comparison = c("Low vs Mid", "Low vs High", "Mid vs High"),
+  
+  # Mean differences
+  mean_diff = c(
+    mean(low_rob, na.rm = TRUE) - mean(mid_rob, na.rm = TRUE),
+    mean(low_rob, na.rm = TRUE) - mean(high_rob, na.rm = TRUE),
+    mean(mid_rob, na.rm = TRUE) - mean(high_rob, na.rm = TRUE)
+  ),
+  
+  t_statistic = c(ttest_low_mid$statistic,
+                  ttest_low_high$statistic,
+                  ttest_mid_high$statistic),
+  
+  p_value = c(ttest_low_mid$p.value,
+              ttest_low_high$p.value,
+              ttest_mid_high$p.value),
+  
+  Decision = c(
+    ifelse(ttest_low_mid$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+    ifelse(ttest_low_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0"),
+    ifelse(ttest_mid_high$p.value < alpha_bonf, "REJECT H0", "FAIL TO REJECT H0")
+  )
+)
+
+
+knitr::kable(t_test_results, digits = 4, caption = "Pairwise T-Tests with Bonferroni Correction")
+```
+
+---
+
+
+## Summary Table
+```{r, error=TRUE}
+# Create a summary table for ANOVA and Pairwise T-Tests
+
+summary_results <- tibble(
+Test = c(
+"ANOVA: Income Groups",
+"Pairwise T-Tests: Income Groups",
+"ANOVA: Unemployment Groups",
+"Pairwise T-Tests: Unemployment Groups",
+"ANOVA: HPI Groups",
+"Pairwise T-Tests: HPI Groups"
+),
+Statistic = c(
+paste0("F=", round(anova_results_1[[1]]["factor(income_group)", "F value"], 4)),
+"See table above",
+paste0("F=", round(anova_results_2[[1]]["factor(unemployment_group)", "F value"], 4)),
+"See table above",
+paste0("F=", round(anova_results_3[[1]]["factor(hpi_group)", "F value"], 4)),
+"See table above"
+),
+p_value = c(
+anova_results_1[[1]]["factor(income_group)", "Pr(>F)"],
+"See table above",
+anova_results_2[[1]]["factor(unemployment_group)", "Pr(>F)"],
+"See table above",
+anova_results_3[[1]]["factor(hpi_group)", "Pr(>F)"],
+"See table above"
+),
+Decision = c(
+ifelse(anova_results_1[[1]]["factor(income_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
+"See table above",
+ifelse(anova_results_2[[1]]["factor(unemployment_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
+"See table above",
+ifelse(anova_results_3[[1]]["factor(hpi_group)", "Pr(>F)"] < 0.05, "Sig", "Not Sig"),
+"See table above"
+)
+)
+
+knitr::kable(summary_results, caption = "Summary of ANOVA and Pairwise T-Tests: Economic Metrics vs Normalized VEP Turnout")
+```
