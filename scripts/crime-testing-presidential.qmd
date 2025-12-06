@@ -301,3 +301,28 @@ ifelse(anova_results_3[[1]]["factor(hpi_group)", "Pr(>F)"] < 0.05, "Sig", "Not S
 
 knitr::kable(summary_results, caption = "Summary of ANOVA and Pairwise T-Tests: Economic Metrics vs Normalized VEP Turnout")
 ```
+
+
+## Bootstraping High and Low Crime Era
+
+```{r}
+
+crime_voter$crime_era <- ifelse(crime_voter$Year<2001, "High_crime_era","Low_crime_era")
+
+
+high <- crime_voter$normalized_vep_turnout[crime_voter$crime_era == "High_crime_era"]
+low  <- crime_voter$normalized_vep_turnout[crime_voter$crime_era == "Low_crime_era"]
+```
+
+```{r}
+
+set.seed(100) 
+
+boot_diff <- replicate(5000, {
+  mean(sample(low, replace = TRUE)) -
+  mean(sample(high, replace = TRUE))
+})
+
+ci <- quantile(boot_diff, c(0.025, 0.975))
+ci
+```
