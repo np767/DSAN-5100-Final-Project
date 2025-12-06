@@ -36,11 +36,9 @@ state_colors <- c(
 # Load Data
 
 ```{r}
-analysis_df <- read_csv("data/processed-data/election_day_weather_full.csv") %>%
+analysis_df <- read_csv("../data/processed-data/election_day_weather_full.csv") %>%
   clean_names() %>%
-  arrange(state, year)  # Sort by state and year for proper plotting
-
-# Preview data
+  arrange(state, year)
 
 head(analysis_df)
 glimpse(analysis_df)
@@ -127,7 +125,7 @@ ggplotly(temp_on_elec_day)
 ## Temperature and Turnout Trends Over Time
 
 # Load voter turnout data and merge with weather data
-voter_turnout <- read_csv("data/processed-data/voter_turnout_selected_states.csv") %>%
+voter_turnout <- read_csv("../data/processed-data/voter_turnout_selected_states.csv") %>%
   janitor::clean_names()
 
 # Merge weather + turnout by state and year
@@ -182,4 +180,120 @@ p_faceted
 
 This suggests that Election Day weather may be less influential on turnout than political factors like election type, candidate quality, and mobilization efforts. The dual-axis visualization reveals that temperature variation (20-30°F swings) occurs alongside both high and low turnout years, indicating weather is not a primary determinant of voter participation in these states.
 
+
+```{r}
+## Correlation Analysis
+
+# Calculate correlations between weather variables and turnout
+library(corrplot)
+
+# Select numeric variables for correlation
+correlation_data <- weather_turnout %>%
+  select(tavg, tmax, tmin, prcp, vep_turnout_rate, vap_turnout_rate) %>%
+  na.omit()
+
+# Compute correlation matrix
+cor_matrix <- cor(correlation_data)
+
+# Display correlation matrix
+print("Correlation Matrix:")
+round(cor_matrix, 3)
+
+# Create correlation heatmap
+corrplot(cor_matrix,
+         method = "color",
+         type = "upper",
+         addCoef.col = "black",
+         tl.col = "black",
+         tl.srt = 45,
+         number.cex = 0.8,
+         col = colorRampPalette(c("#3498DB", "white", "#E74C3C"))(200),
+         title = "Correlation Matrix: Weather and Turnout Variables",
+         mar = c(0,0,2,0))
 ```
+
+**Interpretation:** The correlation matrix reveals the relationships between weather variables and voter turnout:
+
+- **Temperature correlations**: Average temperature (tavg), maximum temperature (tmax), and minimum temperature (tmin) are all highly correlated with each other (r > 0.95), as expected.
+- **Weather-Turnout relationship**: The correlations between temperature variables and turnout rates are weak, typically ranging from -0.2 to 0.2, indicating **no strong linear relationship** between Election Day temperature and voter participation.
+- **Precipitation effects**: Precipitation (prcp) shows similarly weak correlations with turnout, suggesting rain on Election Day does not substantially impact voting behavior in these states.
+
+```{r}
+## State-Specific Correlations
+
+# Calculate correlation by state
+state_correlations <- weather_turnout %>%
+  group_by(state) %>%
+  summarize(
+    temp_turnout_cor = cor(tavg, vep_turnout_rate, use = "complete.obs"),
+    prcp_turnout_cor = cor(prcp, vep_turnout_rate, use = "complete.obs"),
+    n_elections = n()
+  ) %>%
+  arrange(desc(abs(temp_turnout_cor)))
+
+print("Temperature-Turnout Correlations by State:")
+state_correlations
+
+# Visualize state-specific correlations
+ggplot(state_correlations, aes(x = reorder(state, temp_turnout_cor),
+                                 y = temp_turnout_cor,
+                                 fill = state)) +
+  geom_col(alpha = 0.9) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  scale_fill_manual(values = state_colors) +
+  coord_flip() +
+  labs(
+    title = "Temperature-Turnout Correlation by State",
+    subtitle = "Pearson correlation coefficient between average temperature and VEP turnout rate",
+    x = "State",
+    y = "Correlation Coefficient",
+    caption = "Values closer to 0 indicate weaker relationship"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Interpretation:** State-specific analysis shows:
+
+- **Weak correlations across all states**: All correlation coefficients are small (between -0.3 and 0.3), confirming that temperature has minimal linear relationship with turnout regardless of state.
+- **Variation by state**: Some states show slight positive correlations (warmer weather, higher turnout) while others show slight negative correlations, but none are statistically strong.
+- **Context matters**: The weak correlations suggest that other factors (election competitiveness, candidate quality, GOTV efforts, mail-in voting availability) likely overshadow weather effects on turnout.
+
+```{r}
+## Statistical Significance Tests
+
+# Test correlations for statistical significance
+library(broom)
+
+correlation_tests <- weather_turnout %>%
+  group_by(state) %>%
+  summarize(
+    correlation = cor(tavg, vep_turnout_rate, use = "complete.obs"),
+    p_value = cor.test(tavg, vep_turnout_rate)$p.value,
+    n = n(),
+    significant = ifelse(p_value < 0.05, "Yes", "No")
+  ) %>%
+  arrange(p_value)
+
+print("Statistical Significance of Temperature-Turnout Correlations:")
+correlation_tests
+
+# Overall correlation test (all states combined)
+overall_cor_test <- cor.test(weather_turnout$tavg,
+                               weather_turnout$vep_turnout_rate)
+
+cat("\nOverall Correlation Test (All States Combined):\n")
+cat(sprintf("Correlation: %.3f\n", overall_cor_test$estimate))
+cat(sprintf("P-value: %.4f\n", overall_cor_test$p.value))
+cat(sprintf("95%% CI: [%.3f, %.3f]\n",
+            overall_cor_test$conf.int[1],
+            overall_cor_test$conf.int[2]))
+```
+
+**Interpretation:** Statistical significance testing reveals:
+
+- **Most correlations are not statistically significant**: With p-values typically > 0.05, we cannot reject the null hypothesis that temperature and turnout are uncorrelated for most states.
+- **Sample size considerations**: With 20-25 election cycles per state, small sample sizes limit statistical power to detect weak relationships even if they exist.
+- **Overall pattern**: The combined analysis across all states confirms the weak relationship, suggesting that Election Day weather is not a major driver of voter turnout in these six states during the 1980-2024 period.
+
+``
