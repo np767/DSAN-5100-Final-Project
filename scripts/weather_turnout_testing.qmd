@@ -1,0 +1,134 @@
+---
+title: "Testing"
+author: Group 6
+date: today
+format:
+  html:
+    code-fold: true
+    toc: true
+    toc-depth: 3
+    theme: cosmo
+execute:
+  warning: false
+  message: false
+---
+
+# Setup
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+```
+
+# Load and Merge Data
+
+```{r}
+# Load weather data
+election_day_weather_df <- read_csv("../data/processed-data/election_day_weather_full_cleaned.csv") %>%
+  clean_names() %>%
+  arrange(state, year)
+head(election_day_weather_df)
+
+# Load voter turnout data
+voter_turnout_df <- read_csv("../data/processed-data/voter_turnout_selected_states.csv") %>%
+  clean_names() %>%
+  arrange(state, year)
+
+voter_turnout_df <- voter_turnout_df %>%
+  mutate(
+    # Turnout level: low (below mean) vs high (above mean)
+    turnout_level = ifelse(normalized_vep_turnout < 0, "Low", "High")
+  )
+head(voter_turnout_df)
+
+
+weather_turnout <- election_day_weather_df %>%
+  inner_join(voter_turnout_df, by = c("state", "year"))
+
+head(weather_turnout)
+glimpse(weather_turnout)
+
+```
+
+
+
+# Hypothesis Tests
+1. Chi-Square Test of Independence: Weather Conditions and Voter Turnout Classification
+2. 
+Research Question: Is there a significant association between weather conditions (dry vs. wet days) and voter turnout classification (high vs. low relative to expected turnout)?
+Hypotheses:
+
+H₀: Weather conditions and turnout classification are independent (weather does not influence whether turnout is above or below expected levels)
+
+H₁: Weather conditions and turnout classification are dependent (weather influences whether turnout is above or below expected levels)
+
+Method: Chi-square test of independence using a 2×2 contingency table
+Operationalization:
+
+day_type: Binary classification based on precipitation (dry = no precipitation, wet = any precipitation)
+turnout_level: Binary classification based on normalized VEP turnout (low = normalized turnout < 0, high = normalized turnout ≥ 0)
+
+
+```{r}
+
+contingency_table <- table(weather_turnout$day_type,         weather_turnout$turnout_level)
+
+contingency_table
+
+chi <- chisq.test(contingency_table) 
+chi
+
+chi$expected
+
+```
+
+All expected frequencies >= 5. Chi-square assumption satisfied.
+
+```{r}
+contingency_df <- as.data.frame(contingency_table)
+colnames(contingency_df) <- c("Day_Type", "Turnout_Level", "Count")
+
+contingency_df
+```
+
+
+p.value(0.4323) > 0.05. The Chi-Square test does NOT show a statistically significant association between day type and turnout level. We fail to reject the null hypothesis.
+
+This suggests that precipitation on Election Day is independent of whether turnout is high or low.
+
+
+2. Permutation Test: Temperature and Voter Turnout Correlation
+Research Question: Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance?
+Hypotheses:
+
+H₀: ρ = 0 (no linear correlation between temperature and voter turnout exists in the population)
+H₁: ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)
+
+Method: Two-tailed permutation test for Pearson correlation coefficient
+Rationale: Permutation testing accounts for potential non-normality in the data and provides an exact significance test without parametric assumptions.
+
+```{r}
+set.seed(5100)
+n_permutations <- 10000
+
+observed_cor <- cor(weather_turnout$tavg, weather_turnout$vep_turnout_rate)
+
+permuted_cors <- numeric(n_permutations)
+
+#Run 10,000 permutations
+for (i in 1:n_permutations) { 
+    shuffled_turnout <- sample(weather_turnout$vep_turnout_rate)
+    permuted_cors[i] <- cor(weather_turnout$tavg, shuffled_turnout,
+                            use = "complete.obs")
+  }
+
+#Calculate p-value (two-tailed)
+p_value <- mean(abs(permuted_cors) >= abs(observed_cor))
+
+p_value
+```
+
+The permutation test does NOT show statistical significance (p ≥ 0.05). We fail to reject the null hypothesis.
+The observed correlation of 0.070 could plausibly occur by chance.
+This suggests that the relationship between temperature and turnout may not be meaningful.

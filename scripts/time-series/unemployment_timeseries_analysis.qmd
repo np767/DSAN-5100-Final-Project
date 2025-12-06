@@ -1,0 +1,193 @@
+# Time Series Analysis: All 6 States
+
+## Setup
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(forecast)
+library(tseries)
+library(astsa)
+library(plotly)
+library(here)
+
+options(scipen = 999)
+```
+
+## Data Loading
+```{r load-data}
+unemployment_df <- read_csv(here("data", "processed-data", "unemployment_df.csv"))
+
+head(unemployment_df)
+```
+
+## Time Series Analysis Loop
+```{r all-states-analysis}
+states <- c("Florida", "Ohio", "Utah", "Michigan", "New York", "California")
+state_types <- c("Red", "Swing", "Red", "Swing", "Blue", "Blue")
+
+# store results
+all_forecasts <- list()
+all_models <- list()
+
+# loop through each state
+for(i in 1:length(states)) {
+  state_name <- states[i]
+  
+  cat("\n========================================\n")
+  cat("ANALYZING:", state_name, "(", state_types[i], ")\n")
+  cat("========================================\n")
+  
+  # extract and prepare data
+  state_data <- unemployment_df %>%
+    select(year, all_of(state_name)) %>%
+    rename(unemployment_rate = all_of(state_name)) %>%
+    arrange(year)
+  
+  cat("Data loaded:", nrow(state_data), "observations from", 
+      min(state_data$year), "to", max(state_data$year), "\n")
+  
+  # convert to time series
+  state_ts <- ts(state_data$unemployment_rate, start = 1976, frequency = 1)
+  
+  cat("Fitting ARIMA model...\n")
+  
+  # fit best model
+  best_model <- auto.arima(state_ts, seasonal = FALSE)
+  
+  cat("Best model: ARIMA(", paste(arimaorder(best_model), collapse = ","), ")\n", sep = "")
+  
+  # forecast to 2026
+  forecast_vals <- forecast(best_model, h = 2)  # 2025, 2026
+  
+  # extract key values
+  current_2024 <- tail(state_data$unemployment_rate, 1)
+  forecast_2026 <- forecast_vals$mean[2]
+  change <- forecast_2026 - current_2024
+  direction <- ifelse(change > 0, "UP ↑", "DOWN ↓")
+  
+  cat("\nRESULTS:\n")
+  cat("  2024 Unemployment:", round(current_2024, 2), "%\n")
+  cat("  2026 Forecast:", round(forecast_2026, 2), "%\n")
+  cat("  Change:", round(change, 2), "% (", direction, ")\n")
+  cat("  95% CI: [", round(forecast_vals$lower[2,2], 2), "%,", 
+      round(forecast_vals$upper[2,2], 2), "%]\n")
+  
+  # store results
+  all_models[[state_name]] <- best_model
+  all_forecasts[[state_name]] <- list(
+    data = state_data,
+    ts = state_ts,
+    model = best_model,
+    forecast = forecast_vals,
+    state_type = state_types[i],
+    current = current_2024,
+    forecast_2026 = forecast_2026,
+    change = change,
+    direction = direction
+  )
+}
+
+cat("\n========================================\n")
+cat("ANALYSIS COMPLETE FOR ALL 6 STATES\n")
+cat("========================================\n")
+```
+
+## Individual State Forecast Plots
+```{r individual-plots, fig.width=10, fig.height=6, results='asis'}
+# generate and display individual forecast plots for each state
+for(state_name in names(all_forecasts)) {
+  
+  cat("\nCreating plot for", state_name, "...\n")
+  
+  forecast_info <- all_forecasts[[state_name]]
+  
+  # create forecast dataframe
+  forecast_df <- data.frame(
+    year = c(time(forecast_info$ts), 2025, 2026),
+    actual = c(as.numeric(forecast_info$ts), rep(NA, 2)),
+    forecast = c(rep(NA, length(forecast_info$ts)), as.numeric(forecast_info$forecast$mean)),
+    lower = c(rep(NA, length(forecast_info$ts)), as.numeric(forecast_info$forecast$lower[,2])),
+    upper = c(rep(NA, length(forecast_info$ts)), as.numeric(forecast_info$forecast$upper[,2]))
+  )
+  
+  # plotly visualization
+  p <- plot_ly(forecast_df) %>%
+    add_lines(x = ~year, y = ~actual, name = "Historical", 
+              line = list(color = "steelblue", width = 2),
+              hovertemplate = paste('<b>Year:</b> %{x}',
+                                   '<br><b>Unemployment:</b> %{y:.2f}%',
+                                   '<extra></extra>')) %>%
+    add_lines(x = ~year, y = ~forecast, name = "Forecast", 
+              line = list(color = "red", dash = "dash", width = 2),
+              hovertemplate = paste('<b>Year:</b> %{x}',
+                                   '<br><b>Forecast:</b> %{y:.2f}%',
+                                   '<extra></extra>')) %>%
+    add_ribbons(x = ~year, ymin = ~lower, ymax = ~upper,
+                name = "95% CI", fillcolor = "rgba(255,0,0,0.2)",
+                line = list(color = "transparent"),
+                hoverinfo = "skip") %>%
+    layout(
+      title = list(text = paste(state_name, "Unemployment: Historical and Forecasted"),
+                   font = list(size = 16)),
+      xaxis = list(title = "Year"),
+      yaxis = list(title = "Unemployment Rate (%)"),
+      hovermode = 'x unified',
+      showlegend = TRUE
+    )
+  
+  print(p)
+}
+
+cat("\nAll plots generated!\n")
+```
+
+## Summary Table
+```{r summary-table}
+# summary results table
+summary_results <- data.frame(
+  State = character(),
+  Type = character(),
+  Current_2024 = numeric(),
+  Forecast_2026 = numeric(),
+  Change = numeric(),
+  Direction = character(),
+  stringsAsFactors = FALSE
+)
+
+for(state_name in names(all_forecasts)) {
+  info <- all_forecasts[[state_name]]
+  summary_results <- rbind(summary_results, data.frame(
+    State = state_name,
+    Type = info$state_type,
+    Current_2024 = round(info$current, 2),
+    Forecast_2026 = round(info$forecast_2026, 2),
+    Change = round(info$change, 2),
+    Direction = info$direction,
+    stringsAsFactors = FALSE
+  ))
+}
+
+# display table
+knitr::kable(summary_results, 
+             caption = "Unemployment Forecasts for 2026 Midterm Election",
+             align = c('l', 'c', 'c', 'c', 'c', 'c'))
+```
+
+## Comparative Visualization
+```{r comparative-plot, fig.width=10, fig.height=6}
+# bar chart comparing all states
+plot_ly(summary_results, x = ~State, y = ~Change, color = ~Type,
+        colors = c("Red" = "#DC143C", "Blue" = "#4169E1", "Swing" = "#9370DB"),
+        type = "bar",
+        text = ~Direction,
+        textposition = "outside",
+        hovertemplate = paste('<b>%{x}</b>',
+                             '<br>Change: %{y:.2f}%',
+                             '<br>%{text}',
+                             '<extra></extra>')) %>%
+  layout(
+    title = "Unemployment Change Forecast: 2024 to 2026 Midterm",
+    xaxis = list(title = "State"),
+    yaxis = list(title = "Change in Unemployment Rate (%)", zeroline = TRUE),
+    hovermode = "x"
+  )
+```

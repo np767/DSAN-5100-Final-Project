@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Pavlos Baffes">
+
+<title>DSAN 5100 Project. Crime Data EDA</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="crime-eda_files/libs/clipboard/clipboard.min.js"></script>
+<script src="crime-eda_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="crime-eda_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="crime-eda_files/libs/quarto-html/popper.min.js"></script>
+<script src="crime-eda_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="crime-eda_files/libs/quarto-html/anchor.min.js"></script>
+<link href="crime-eda_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="crime-eda_files/libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="crime-eda_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="crime-eda_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="crime-eda_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="crime-eda_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="crime-eda_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="crime-eda_files/libs/plotly-binding-4.11.0/plotly.js"></script>
+<script src="crime-eda_files/libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="crime-eda_files/libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="crime-eda_files/libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="crime-eda_files/libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="crime-eda_files/libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="crime-eda_files/libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DSAN 5100 Project. Crime Data EDA</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Pavlos Baffes </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pull in proper libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.2
+✔ ggplot2   4.0.0     ✔ tibble    3.3.0
+✔ lubridate 1.9.4     ✔ tidyr     1.3.1
+✔ purrr     1.1.0     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'plotly'
+
+The following object is masked from 'package:ggplot2':
+
+    last_plot
+
+The following object is masked from 'package:stats':
+
+    filter
+
+The following object is masked from 'package:graphics':
+
+    layout</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pull in cleaned crime data</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>crime_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'data/processed-data/crime_data_yearly_clean.csv'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 273 Columns: 13
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (1): State
+dbl (12): Year, aggravated_assault_count, homicide_count, rape_count, robber...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Distributions of crime rates</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplot of violent crime rates per month of each state and the nation</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(crime_data, <span class="fu">aes</span>(<span class="at">x=</span>State, <span class="at">y=</span>violent_crime_rate))<span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> State), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>)<span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Violent Crime by State and Nation"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"States + US"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Crime per 100k"</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"State and National level yearly data aggregated from 1986-2024"</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the title</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">20</span>,          <span class="co"># title font size</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">face =</span> <span class="st">"bold"</span>       </span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the subtitle</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">14</span>           <span class="co"># subtitle font size</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crime-eda_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplot of Aggravated Assault crime rates per year of each state and the nation</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(crime_data, <span class="fu">aes</span>(<span class="at">x=</span>State, <span class="at">y=</span>aggravated_assault_rate))<span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> State), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>)<span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Aggravated Assault by State and Nation"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"States + US"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Crime per 100k"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"State and National level yearly data aggregated from 1986-2024"</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the title</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">20</span>,          <span class="co"># title font size</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">face =</span> <span class="st">"bold"</span>      </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the subtitle</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">14</span>           <span class="co"># subtitle font size</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crime-eda_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplot of Homicide crime rates per year of each state and the nation</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(crime_data, <span class="fu">aes</span>(<span class="at">x=</span>State, <span class="at">y=</span>homicide_rate))<span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> State), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>)<span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Homicide by State and Nation"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"States + US"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Crime per 100k"</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"State and National level yearly data aggregated from 1986-2024"</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the title</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">20</span>,          <span class="co"># title font size</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">face =</span> <span class="st">"bold"</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the subtitle</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">14</span>           <span class="co"># subtitle font size</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crime-eda_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplot of Rape crime rates per year of each state and the nation</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(crime_data, <span class="fu">aes</span>(<span class="at">x=</span>State, <span class="at">y=</span>rape_rate))<span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> State), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>)<span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Homicide by State and Nation"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"States + US"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Crime per 100k"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"State and National level yearly data aggregated from 1986-2024"</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the title</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">20</span>,          <span class="co"># title font size</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">face =</span> <span class="st">"bold"</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the subtitle</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">14</span>           <span class="co"># subtitle font size</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crime-eda_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot boxplot of Robbery crime rates per year of each state and the nation</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(crime_data, <span class="fu">aes</span>(<span class="at">x=</span>State, <span class="at">y=</span>robbery_rate))<span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_boxplot</span>(<span class="fu">aes</span>(<span class="at">fill =</span> State), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>)<span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">labs</span>(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Homicide by State and Nation"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"States + US"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Crime per 100k"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"State and National level yearly data aggregated from 1986-2024"</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="fu">theme</span>(</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the title</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">20</span>,          <span class="co"># title font size</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">face =</span> <span class="st">"bold"</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">hjust =</span> <span class="fl">0.5</span>,        <span class="co"># centers the subtitle</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">size =</span> <span class="dv">14</span>           <span class="co"># subtitle font size</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Dark2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="crime-eda_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a split between US and State data so its easier to color US in difference to state</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>us_data <span class="ot">&lt;-</span> crime_data <span class="sc">|&gt;</span> <span class="fu">filter</span>(State <span class="sc">==</span> <span class="st">"United States"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>state_data <span class="ot">&lt;-</span> crime_data <span class="sc">|&gt;</span> <span class="fu">filter</span>(State <span class="sc">!=</span> <span class="st">"United States"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create figure for total violent crime data</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co"># U.S. trace</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> us_data,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>violent_crime_rate,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"United States"</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">line =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="dv">3</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="co"># States trace</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> state_data,</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>violent_crime_rate,</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="sc">~</span>State,</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">split =</span> <span class="sc">~</span>State,</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">opacity =</span> <span class="fl">0.6</span>,      <span class="co"># Make states more see through to highlight difference between US</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> <span class="cn">FALSE</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">list</span>(       <span class="co">#Create title using HTML to show different states</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">text =</span> <span class="st">"Violent Crime Rates Over Time&lt;br&gt;&lt;sup&gt;Six States + United States&lt;/sup&gt;"</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Year"</span>),</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Violent Crime Rate (per 100k)"</span>)</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">style</span>(<span class="at">showlegend =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>fig </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-46b5061aeb4c0a2de094" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-46b5061aeb4c0a2de094">{"x":{"visdat":{"6180516232ef":["function () ","plotlyVisDat"],"61805fe12a7":["function () ","data"],"61806b7a9503":["function () ","data"]},"cur_data":"61806b7a9503","attrs":{"61805fe12a7":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"inherit":true},"61806b7a9503":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"color":{},"split":{},"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":{"text":"Violent Crime Rates Over Time<br><sup>Six States + United States<\/sup>"},"xaxis":{"domain":[0,1],"automargin":true,"title":"Year"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Violent Crime Rate (per 100k)"},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[606.65952192811505,595.84648440255944,562.79007099182911,648.15695276255417,706.9237669919064,730.58191367862764,727.63255420876783,700.84714372178723,674.96758518427578,631.3084516774893,564.16898585717581,557.92010124449416,521.10517086959851,476.02393932044936,478.22741350193519,479.2974729475356,473.91050338208726,454.12201809731272,448.68757805058567,451.28970911038402,467.68765050108334,460.73048467385382,448.22526994830281,422.95971996801569,398.69628789597948,382.4117197940559,383.38470015341699,368.81999377740789,364.42831497410782,376.06854741630445,390.58242381384269,388.11880795717497,379.17030685541903,369.65810482243489,383.70973779541038,280.5268513292512,379.75336015583457,370.32183053644275,351.19300526685714],"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null,"showlegend":true},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[916.31550561675044,913.98479282869755,917.9339317893124,969.33195391743322,1032.9272686824202,1077.2138881056237,1115.4537649631591,1074.7139050168237,1008.4887977186188,935.71603398751336,857.88882880619576,792.36877659029233,696.48133734796409,620.61176140185307,619.2219089709281,617.30668736150085,596.92285262926885,580.35650081741608,554.95531415469293,529.17634707635887,539.91257704282054,528.40650111939726,506.30066049277167,472.44911688407331,439.62001422205469,411.46310032722192,423.95016443207692,396.8841519125051,392.67847229052063,428.31288159515719,446.12933854692449,453.70889035727146,448.39553846641962,438.59339425169776,440.02880626511467,93.054709112701246,495.06144408977946,513.45079286189468,476.30480413472935],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"California","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[1036.8283536197328,1025.1654478768237,0,1111.6250049949697,1196.7108578045463,1183.3312664858513,1179.329511412468,1158.9635665786016,1105.96312608835,1030.5013628195318,564.06765876542408,980.1594910782768,901.43330096763282,814.3192570336181,797.88677561603777,798.04530986981331,766.3860289513625,730.62443524600121,710.2655260156605,704.38702125844588,712.48456678844434,717.03578460659674,680.50911883838478,608.03712331613679,540.75933203707586,515.24578212090682,486.89950606861231,469.11786532645857,458.86026597620042,462.22873899712812,429.33562348554779,408.15006459048828,385.61842209377687,377.57702312864711,384.94287361056985,95.552623359462757,273.69474092858616,225.71184431187291,209.1329384057095],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Florida","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[796.33864769891886,775.58799849490845,736.03834585340553,696.35735162447543,775.80845420503795,789.77103852306584,758.52417933625316,699.78199421935619,717.36702099672038,645.44892623775979,590.18439547703599,563.20433036794282,617.81436161992019,554.55548868983647,542.73068440434258,548.51708316985491,539.08310044919426,507.88993135448999,490.00951238225758,553.33043415884197,565.02134647976629,532.94157030237318,513.20568672275317,498.77842863838754,487.521652724219,440.74260413348486,449.5336786517729,444.2319302859409,424.94104642890807,417.38007987542937,457.38078749450659,450.90229591279115,453.05162062132558,437.1946048691795,482.82968335311784,488.9282328642829,459.83052026206275,453.50972434177669,429.89178300508883],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Michigan","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[975.62895819360278,1002.2078647711368,1087.8860622711532,1125.3574608940869,1174.3384749520333,1161.4947377598355,1110.181686471486,1059.4148970386541,949.64806681881998,813.62639726056375,709.36484248829652,658.10145136189738,602.67416567346845,539.0164819961102,525.97704004572211,487.37509588458488,493.05562812862502,460.79620924951843,439.57804805418363,447.14756638012273,439.21287985096387,417.43989952088958,402.90570128639598,388.31897088868914,390.70864260074211,396.43081492248854,405.2279954786539,389.12179283319421,385.7453105938518,381.70071167833635,377.534682175726,359.41571362559631,349.51240763670864,356.76244570338559,348.68641505212764,53.374912763204222,428.53270497230807,393.03621399956745,378.52248081868208],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"New York","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[393.57824054347947,389.55064502248587,401.31306493685452,432.7736714482682,470.28937896912805,518.72130967218175,477.83063333004213,444.25167144995919,440.32461375765376,416.67444005494718,370.9832055585307,306.55232427243368,274.9670778575076,266.253120519037,285.57114625253757,322.78647530200914,327.86959971297057,303.58236637181204,316.84600695531384,322.05329695062164,339.08438071830915,335.38635123370631,330.73127955446756,318.0616773713632,297.79009814776168,291.19949192107214,289.30836234686126,276.48677289628012,266.19666112198024,267.78504581913171,291.30068925090058,286.90398082275198,287.50445023830667,287.66115440880822,303.00269389405202,308.54881101461808,295.92777100519157,295.70280329031527,291.3078719521103],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Ohio","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[266.89374886488969,229.06599591566507,242.51615393175689,250.43028049129356,281.88165245031979,280.8774118149434,283.42785465366654,288.66352999677622,291.31126284529131,305.48457260707477,302.51801761722572,315.40949455227513,295.94267668839683,265.12583265939998,238.31567091497351,227.91810711932092,236.49193591748161,239.56236438816904,232.47195596232481,229.35901134344488,225.14291189848217,241.40158429654016,228.98736739254437,218.36506364605401,211.3260683766843,194.89167078835013,202.91759758181101,225.59738269764361,212.26615056323391,235.66025618453065,239.95124048775295,240.20958116658849,234.30736788698451,231.84957507241208,235.83490886480433,247.5044449594549,242.19915535514335,231.26594799870583,228.25009497338891],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Utah","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create figure for Aggravated Assault crime rate</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>fig_agg <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># U.S. trace</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> us_data,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>aggravated_assault_rate,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"United States"</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">line =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="dv">3</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co"># State trace</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> state_data,</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>aggravated_assault_rate,</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">split =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">opacity =</span> <span class="fl">0.6</span>,      <span class="co"># Make states more see through to highlight difference between US</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Year"</span>),</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Aggravated Assault Rate (per 100k)"</span>)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">style</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>) <span class="co"># Remove legend for every graph except one to ensure no duplicated legends</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Create figure for Homicide crime rate</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>fig_hom <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="co"># U.S. trace</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> us_data,</span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>homicide_rate,</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"United States"</span>,</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">line =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="dv">3</span>)</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="co"># State trace</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> state_data,</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>homicide_rate,</span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">split =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">opacity =</span> <span class="fl">0.6</span>,      <span class="co"># Make states more see through to highlight difference between US</span></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(</span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Year"</span>),</span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Homicide Rate (per 100k)"</span>)</span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">style</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>) <span class="co"># Remove legend for every graph except one to ensure no duplicated legends</span></span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Create figure for Rape crime rates</span></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a>fig_rp <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="co"># U.S. trace</span></span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> us_data,</span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>rape_rate,</span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"United States"</span>,</span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">line =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="dv">3</span>)</span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a><span class="co"># State trace</span></span>
+<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> state_data,</span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>rape_rate,</span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a>    <span class="at">split =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a>    <span class="at">opacity =</span> <span class="fl">0.6</span>,      <span class="co"># Make states more see through to highlight difference between US</span></span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-88"><a href="#cb13-88" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(</span>
+<span id="cb13-89"><a href="#cb13-89" aria-hidden="true" tabindex="-1"></a>    <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Year"</span>),</span>
+<span id="cb13-90"><a href="#cb13-90" aria-hidden="true" tabindex="-1"></a>    <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Rape Rate (per 100k)"</span>)</span>
+<span id="cb13-91"><a href="#cb13-91" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-92"><a href="#cb13-92" aria-hidden="true" tabindex="-1"></a>    <span class="fu">style</span>(<span class="at">showlegend =</span> <span class="cn">FALSE</span>) <span class="co"># Remove legend for every graph except one to ensure no duplicated legends</span></span>
+<span id="cb13-93"><a href="#cb13-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-94"><a href="#cb13-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Create figure for Robbery crime rate</span></span>
+<span id="cb13-95"><a href="#cb13-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-96"><a href="#cb13-96" aria-hidden="true" tabindex="-1"></a>fig_rob <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-97"><a href="#cb13-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-98"><a href="#cb13-98" aria-hidden="true" tabindex="-1"></a><span class="co"># U.S. trace</span></span>
+<span id="cb13-99"><a href="#cb13-99" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> us_data,</span>
+<span id="cb13-100"><a href="#cb13-100" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-101"><a href="#cb13-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>robbery_rate,</span>
+<span id="cb13-102"><a href="#cb13-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"United States"</span>,</span>
+<span id="cb13-103"><a href="#cb13-103" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-104"><a href="#cb13-104" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-105"><a href="#cb13-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">line =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">width =</span> <span class="dv">3</span>)</span>
+<span id="cb13-106"><a href="#cb13-106" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-107"><a href="#cb13-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-108"><a href="#cb13-108" aria-hidden="true" tabindex="-1"></a><span class="co"># State trace</span></span>
+<span id="cb13-109"><a href="#cb13-109" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_trace</span> (  <span class="at">data =</span> state_data,</span>
+<span id="cb13-110"><a href="#cb13-110" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">~</span>Year,</span>
+<span id="cb13-111"><a href="#cb13-111" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">~</span>robbery_rate,</span>
+<span id="cb13-112"><a href="#cb13-112" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-113"><a href="#cb13-113" aria-hidden="true" tabindex="-1"></a>    <span class="at">split =</span> <span class="sc">~</span>State,</span>
+<span id="cb13-114"><a href="#cb13-114" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"lines"</span>,</span>
+<span id="cb13-115"><a href="#cb13-115" aria-hidden="true" tabindex="-1"></a>    <span class="at">type =</span> <span class="st">"scatter"</span>,</span>
+<span id="cb13-116"><a href="#cb13-116" aria-hidden="true" tabindex="-1"></a>    <span class="at">opacity =</span> <span class="fl">0.6</span>,      <span class="co"># Make states more see through to highlight difference between US</span></span>
+<span id="cb13-117"><a href="#cb13-117" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> <span class="cn">FALSE</span></span>
+<span id="cb13-118"><a href="#cb13-118" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-119"><a href="#cb13-119" aria-hidden="true" tabindex="-1"></a>    <span class="fu">layout</span>(</span>
+<span id="cb13-120"><a href="#cb13-120" aria-hidden="true" tabindex="-1"></a>    <span class="at">xaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Year"</span>),</span>
+<span id="cb13-121"><a href="#cb13-121" aria-hidden="true" tabindex="-1"></a>    <span class="at">yaxis =</span> <span class="fu">list</span>(<span class="at">title =</span> <span class="st">"Robbery Rate (per 100k)"</span>)</span>
+<span id="cb13-122"><a href="#cb13-122" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb13-123"><a href="#cb13-123" aria-hidden="true" tabindex="-1"></a>    <span class="fu">style</span>(<span class="at">showlegend =</span> <span class="cn">TRUE</span>) <span class="co"># Keep this legend as the single legend to show in plot</span></span>
+<span id="cb13-124"><a href="#cb13-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-125"><a href="#cb13-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-126"><a href="#cb13-126" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 2x2 grid to put each plot from above in </span></span>
+<span id="cb13-127"><a href="#cb13-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-128"><a href="#cb13-128" aria-hidden="true" tabindex="-1"></a>combined_fig <span class="ot">&lt;-</span> <span class="fu">subplot</span>(</span>
+<span id="cb13-129"><a href="#cb13-129" aria-hidden="true" tabindex="-1"></a>    fig_agg, fig_hom, fig_rp, fig_rob,</span>
+<span id="cb13-130"><a href="#cb13-130" aria-hidden="true" tabindex="-1"></a>    <span class="at">nrows=</span><span class="dv">2</span>,</span>
+<span id="cb13-131"><a href="#cb13-131" aria-hidden="true" tabindex="-1"></a>    <span class="at">shareX =</span> <span class="cn">FALSE</span>,     </span>
+<span id="cb13-132"><a href="#cb13-132" aria-hidden="true" tabindex="-1"></a>    <span class="at">shareY =</span> <span class="cn">FALSE</span>,     </span>
+<span id="cb13-133"><a href="#cb13-133" aria-hidden="true" tabindex="-1"></a>    <span class="at">titleX =</span> <span class="cn">FALSE</span>,     </span>
+<span id="cb13-134"><a href="#cb13-134" aria-hidden="true" tabindex="-1"></a>    <span class="at">titleY =</span> <span class="cn">TRUE</span>,      </span>
+<span id="cb13-135"><a href="#cb13-135" aria-hidden="true" tabindex="-1"></a>    <span class="at">margin =</span> <span class="fl">0.06</span>       </span>
+<span id="cb13-136"><a href="#cb13-136" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span> <span class="fu">layout</span>(</span>
+<span id="cb13-137"><a href="#cb13-137" aria-hidden="true" tabindex="-1"></a>    <span class="at">showlegend =</span> <span class="cn">TRUE</span>,      <span class="co">#Show only 1 legend</span></span>
+<span id="cb13-138"><a href="#cb13-138" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend =</span> <span class="fu">list</span>(          <span class="co"># Orient the legend at the top horizontally</span></span>
+<span id="cb13-139"><a href="#cb13-139" aria-hidden="true" tabindex="-1"></a>      <span class="at">orientation =</span> <span class="st">"h"</span>,</span>
+<span id="cb13-140"><a href="#cb13-140" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> .<span class="dv">5</span>, <span class="at">xanchor =</span> <span class="st">"center"</span>,</span>
+<span id="cb13-141"><a href="#cb13-141" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="fl">1.08</span></span>
+<span id="cb13-142"><a href="#cb13-142" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb13-143"><a href="#cb13-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">annotations =</span> <span class="fu">list</span>(     <span class="co">#Create an annotation as a title for all</span></span>
+<span id="cb13-144"><a href="#cb13-144" aria-hidden="true" tabindex="-1"></a>      <span class="fu">list</span>(</span>
+<span id="cb13-145"><a href="#cb13-145" aria-hidden="true" tabindex="-1"></a>        <span class="at">text =</span> <span class="st">"Violent Crime Breakdown by Offense Type"</span>,</span>
+<span id="cb13-146"><a href="#cb13-146" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> <span class="fl">0.5</span>,            </span>
+<span id="cb13-147"><a href="#cb13-147" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> <span class="fl">1.15</span>,           <span class="co"># Since it is an annotation it can go beyond the top of plot</span></span>
+<span id="cb13-148"><a href="#cb13-148" aria-hidden="true" tabindex="-1"></a>        <span class="at">xref =</span> <span class="st">"paper"</span>,</span>
+<span id="cb13-149"><a href="#cb13-149" aria-hidden="true" tabindex="-1"></a>        <span class="at">yref =</span> <span class="st">"paper"</span>,</span>
+<span id="cb13-150"><a href="#cb13-150" aria-hidden="true" tabindex="-1"></a>        <span class="at">showarrow =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb13-151"><a href="#cb13-151" aria-hidden="true" tabindex="-1"></a>        <span class="at">font =</span> <span class="fu">list</span>(<span class="at">size =</span> <span class="dv">20</span>)</span>
+<span id="cb13-152"><a href="#cb13-152" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb13-153"><a href="#cb13-153" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb13-154"><a href="#cb13-154" aria-hidden="true" tabindex="-1"></a>     <span class="at">margin =</span> <span class="fu">list</span>(<span class="at">t =</span> <span class="dv">90</span>) <span class="co"># Decrease margin so there is less white space</span></span>
+<span id="cb13-155"><a href="#cb13-155" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb13-156"><a href="#cb13-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-157"><a href="#cb13-157" aria-hidden="true" tabindex="-1"></a>combined_fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-b9e9d4d44b1a6cf74b3f" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-b9e9d4d44b1a6cf74b3f">{"x":{"data":[{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[339.02812052608391,342.3115703542,325.51423741504885,373.63336722183283,408.45705713420892,414.98936475218505,421.17781351571358,411.33956914231931,402.36264003904046,381.77299650445161,339.80565081328899,345.1533517203614,329.7750465949203,303.38248649563599,304.36265303956452,300.85943923259993,295.87637686522129,280.87305010028803,279.87642491359566,279.02324363173932,284.65991370089284,280.63825405712362,271.33455189965855,258.79683247919661,248.77339177398588,238.23066089692503,239.70163048588671,225.78930090429171,225.84188611806093,233.61255608761789,244.36545375887201,244.68257955317819,244.05310811079977,241.09101572146753,266.81828923849287,199.32715398529649,265.36947166281834,259.80130991103903,248.94608815167123],"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null,"showlegend":false},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[519.07523353146098,559.89169230343862,563.99520675918768,589.07876620858178,606.97911832017303,616.50299487350742,639.1353654611662,619.9886375437859,606.80460043192772,575.18820168054708,522.82041251096155,502.47783584379863,451.85057752630343,407.27534899038199,407.06159122091901,394.6291731151922,374.6575711527492,364.9999139084245,348.19529542671148,319.08334787738164,309.87305753983446,302.17671787698595,286.56440355687909,270.41038056391466,256.77995381610395,242.17042986108137,249.45979846530065,232.64027475441108,237.81658312470731,254.97426707842084,266.38927751562619,267.81510482984146,267.04956729060166,265.35080043458959,287.36430517941443,67.042106208420421,328.74824736154494,344.85843698921286,320.04047144013623],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"California","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[605.39078406223098,606.70403457182761,0,645.91581626900108,729.81477379455578,724.68559360433119,759.2146633180356,756.37682704724602,730.35155024311337,687.39757357935741,367.6878497525139,659.87089419519066,614.22941016141806,562.89504544614931,553.40032397539437,551.47146481810864,526.57469994373662,500.32683322860362,494.71390645867046,494.0074670841974,482.91984527981799,469.56523254065451,446.45457069984002,407.57224552186807,368.6920675170997,347.96711970779558,330.84044406669312,311.2410703144198,309.40378599904034,315.39347585105719,289.50962518356317,276.60308363830222,261.26516564406376,257.62956311458697,281.08976296120306,71.73431927676269,202.80784324379587,167.58009694707692,155.38107962809687],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Florida","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[418.79866670683714,421.29066715893072,416.60889924254701,396.26965313437,458.52794861823548,461.4781043367517,451.36308275130511,456.80795847932217,424.28751694279595,401.13842081368415,364.80474492104184,360.8402076816605,404.71400014338019,360.75155631195997,351.91334796959541,362.0915372851091,361.35231551233011,336.88365637727622,318.1103724746564,363.51111322032523,363.83723885847473,348.30527760235589,330.6460944723521,322.66531711923869,318.95690310614719,287.10602229496203,291.85184212214739,270.84458742074219,275.93574443435591,266.19773120755076,307.7411336495162,307.25608872013294,310.45449191472176,303.58900703194206,365.84023176301338,373.55531143169878,350.87485400527737,351.80747362286922,338.01231285487177],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Michigan","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[424.71945508598213,459.45883025027689,504.18840676563786,506.30909511304122,507.95237321528293,496.92895741263209,477.84105939867442,464.55626501160225,440.79272048439088,394.84230924205571,347.1831448113507,333.94177035770713,321.53072210961176,290.48243831332604,295.24602431982692,278.4124667410581,276.11846711743254,251.74256134210688,242.3954181731728,240.50038128619147,237.60207669020144,235.58546303940423,218.76975933712936,225.40452288296936,225.5220367880664,233.01419783467469,241.31795890365328,234.31488286013868,230.13020831610569,226.10407116559497,229.16018537363928,222.50103269229157,220.27765911631593,227.86059580556997,230.54267979118404,35.423731511996309,283.23546785289113,256.22971898936669,255.15360758571097],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"New York","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[215.09248417653689,199.54294062596131,210.38005836338056,220.98550615432308,240.20260375351543,259.26015932010944,238.00865157957833,219.50898736526159,217.67406527747167,213.44757194014215,182.88994396160325,153.64415616176734,137.49679972728725,119.62467493582524,126.68584085086844,141.12962006090237,137.11563988744982,124.4797892186545,129.50292479618199,126.49912939706824,135.69123750251825,140.27255238656377,135.01929721708973,131.48700447987389,125.63981151081828,123.16513699880196,124.73024540903076,117.88349755422192,117.688124315892,121.47163505623872,136.79296773267481,139.57537318873207,151.34021865240146,158.10455894807981,185.07649650539605,193.89252154096965,184.67679311223745,189.60534112131273,191.01589928188324],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Ohio","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[179.69322253454041,151.35994527205759,162.13125350722044,169.18113050043848,185.1870036384683,178.28046163008912,181.07588255437855,186.41975048514436,186.18212386365141,199.13840739915111,196.03709133955132,203.32260268027309,190.07737908363961,173.27121347031652,144.97648030609909,134.16735450789611,143.9254306256627,147.40669715359743,139.57477993654177,143.54773674289046,139.57593465391307,148.85981924329784,140.29137497188353,135.12416919749094,128.70532246232162,123.1885911801659,129.88128093923862,130.48549854364242,117.13114500120706,134.51448520793403,137.25118907197813,132.43935425576308,135.24440709676398,137.27565988075949,143.38884258803921,150.43096194970985,148.56926149752979,146.43261456856396,139.65583527632759],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Utah","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[8.3707819390982792,8.044940792545864,7.5587226471203763,8.4495037116840539,9.1217624042969092,9.4686974857920223,8.9726018468277999,9.0035884620918303,8.431327611895604,7.6480107043458077,6.6734897760488483,6.2094960359446567,5.7142524876120744,5.1462124979798611,5.2196888833644106,5.3746205441922612,5.4296356439124578,5.4510746522743316,5.330163117472007,5.4748193687759645,5.6743096029869466,5.6030051361843132,5.3177641808256073,4.9437443068584113,4.7122467004946236,4.6707362970909774,4.7248361291534655,4.4665445323809685,4.3876706793212543,4.8787537379360977,5.302201798518122,5.3734698638390803,5.1590587177071088,5.0859201376550871,6.5106907665569329,5.3944633985884245,6.5484627966344302,5.8594521667266903,5.0118933528839706],"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"marker":{"color":"rgba(127,127,127,1)","line":{"color":"rgba(127,127,127,1)"}},"error_y":{"color":"rgba(127,127,127,1)"},"error_x":{"color":"rgba(127,127,127,1)"},"xaxis":"x2","yaxis":"y2","frame":null,"showlegend":false},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[11.205717077892867,10.526634870277226,10.31820653339563,10.75700718224458,11.762540214686386,12.523491391871859,12.655506554567721,13.093555323292833,11.713724575333812,10.695159497008229,9.1102630408090448,7.9388019642917058,6.5751830039552646,5.985216842764383,6.1168689151460827,6.3980124049513769,6.8680052270251384,6.8220836606444255,6.7267140443219899,6.9861671935784875,6.9014909607958117,6.2399464655627366,5.851765598158492,5.3353204245454071,4.8473315640707098,4.7610989732312792,4.9645838603592214,4.5634189385597326,4.4044905906090248,4.7818434867424608,4.9276029175187945,4.6495677921847474,4.4068170799411313,4.249317989524406,5.5715863065286388,1.0014673284696596,5.704809110649129,4.8828158632738088,4.2200017787916151],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"California","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x2","yaxis":"y2","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[11.750584208020481,11.410916955113921,0,11.109603278757277,10.434803691802855,9.5887761355855936,8.7249212541059702,8.5013590327119228,8.0831807758786081,7.0643061657910797,3.9115728697075949,6.558541169727671,6.2376671279914415,5.4316716331139325,5.5460300239632119,5.3371756106847688,5.4286051540591407,5.4339883622082574,5.4319995764648112,4.9265672452889069,6.2090638019837074,6.5440458383733917,6.3042088420307216,5.4523101389808328,5.2373142776456838,5.164476776308403,5.2285693173043049,4.9627484335238057,4.9430837415324493,5.1462112850277615,5.3751242451722243,5.0420697997048505,5.2108053179586804,5.2147020889584406,5.9651626166778629,1.6031550824894287,4.1556237296302942,3.4796096620159518,2.8580945366110999],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Florida","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x2","yaxis":"y2","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[11.25137287016825,12.179617024514121,10.880887585352047,10.612435894457056,10.32077195507962,10.680344315578219,9.8849411835450045,9.6749367984491581,9.3042766227080396,8.1126796428891428,7.0706537639190694,7.4930796057641036,7.3619442519056273,7.2445346705040139,6.6817718250280089,6.6959460000480426,6.8192869002796606,6.075000159344266,6.3946281145841768,6.4470318134157365,7.1840791241122908,6.5891539526324818,5.5595272049381466,6.2717193630801349,5.9022972388790294,6.2332960819686534,7.082850660468246,6.2846354785326231,5.4784322982587446,5.870083867690524,6.1504008161943666,5.725393292405963,5.628965816752924,5.7876066514219637,7.5848558227121359,7.5687026576403911,6.8252750481375903,5.6528798546833023,4.9011588134225477],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Michigan","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x2","yaxis":"y2","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[10.648546978007976,11.248626660207751,12.451711299326041,12.489513757538612,14.427785161844236,14.142632560280006,13.120214430558852,13.132005663796493,10.769539970540864,8.2865006588172907,7.1549767974323855,5.7459724860110768,4.7611669625556878,4.5597232390981706,4.7942876930477043,4.8630083219277971,4.6609328135940391,4.8289682189748309,4.6631555991223879,4.5785703048355657,4.8260550020568314,4.2075366127553178,4.351348262136046,4.0451511379305378,4.4587909264171657,3.943743246211481,3.484403869588879,3.2765254480801422,3.1346927077531586,3.1188522867801467,3.1935329887373718,2.7820924316263773,2.8673319798502339,2.8580885525277351,4.108395795290674,1.1537525979586338,4.075366984766907,3.3591106655715528,2.8841437928393505],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"New York","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"xaxis":"x2","yaxis":"y2","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[5.2468400602855398,5.5482807299938948,4.963628456852363,5.6975495088887778,5.7436551479994504,6.7514714827528675,6.0565227707576215,5.5039392350695513,5.4965481139845993,4.8470237355092509,4.3049670692255608,3.2543086114946971,3.1649105833195419,3.1053012962692099,3.1856261731046382,3.8287918826801959,4.3391025280838553,4.2152071380772425,4.1913157509383963,4.9025936639647156,4.5726875722974567,4.4085162447302144,4.0901780929540301,4.4496888513869841,4.0903566721690057,4.2703715127934014,4.1302552627634634,4.0857986622075888,3.861170244856801,4.3468803644699943,5.6470612504157938,6.1065297843417259,5.1471603989640249,4.9362226347622995,7.0091249993113767,7.5378097215480402,6.4018344906729352,5.9793468117564617,5.1332525028392784],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Ohio","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"xaxis":"x2","yaxis":"y2","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[3.1873295831093182,3.2774791299067587,2.7820989101275506,2.5793380949477802,2.9458943186406374,2.8655227050534333,2.9398970709369943,3.0551979452213542,2.8564928592779397,3.6243090850506192,2.9981005582269815,2.5002547429360726,2.8624720678128868,2.2691358495326939,2.3167722728694384,3.678217290686447,2.1076945907523825,2.4151140378715303,2.123601962041656,2.2378473698579859,2.0193965013757631,2.2327048140965284,1.5396002071325543,1.4320224452994963,1.9096814363110433,1.7765877008965372,1.8574495115433476,1.7600530086553194,2.247283595953391,1.9115745841067664,2.4327156865452415,2.1928113195500094,1.9343279795785704,2.2458185665563928,2.9840956835055938,2.2756276091118526,2.3591784279083732,2.2943626638073291,2.5116929295558612],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Utah","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"xaxis":"x2","yaxis":"y2","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[35.31544657297102,34.711864122485373,32.004632101066854,35.132594814431599,37.815854443496498,38.561402931930751,39.183792006793354,34.005647953119841,35.412336062601781,32.879122865969826,30.548532351191241,31.252874023794689,30.10033158687391,28.326387762209205,28.782359674407516,29.043865497559199,30.363821433402741,29.562445643290971,30.137774351337047,29.544194910012489,29.284142962010119,28.129555647267317,27.5434600369545,27.481037850810463,27.217621412914539,26.514260121893503,26.587240476155653,30.480353066515899,34.052044220984683,37.302209427354668,39.138690435303275,41.845861947721929,44.113104896535354,43.404584157892529,39.208907039954312,34.095477816665692,41.317917162744983,39.144465827890222,37.471885501094128],"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"xaxis":"x3","yaxis":"y3","frame":null,"showlegend":false},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[44.708486609426373,43.586172494680703,41.26931295464707,40.796540124834678,42.140201535305231,41.964854409817995,41.165909203391067,37.595610132179999,34.699685733601385,32.25584386354339,31.968684431169478,31.342722605823244,29.638342199018272,28.173803771576186,28.789592272585097,28.883864705761905,29.192606768733157,28.133648958948616,26.968698094954103,26.082993377543335,25.637678609392324,24.954268668205355,24.322254491318883,23.532767268101395,22.310051189857788,20.348915756684356,20.643604013829162,19.505610274038535,24.351651212431896,32.87421040805107,34.965555417316011,37.409965121381539,39.283771347468331,37.254294702679729,34.008942573138711,7.8150218310935928,38.183643962275802,37.531863626167329,36.105868584528984],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"California","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x3","yaxis":"y3","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[52.736210526586447,50.144686926198212,0,49.795394183204799,50.708542352297854,52.072589279209751,53.316521316022879,52.006202258388903,50.584840250785078,46.829402508963653,25.179488008100527,49.781698035282325,47.738170887412757,44.119641197478003,43.321349131002528,40.557643758628586,40.169281404870283,39.543439120658356,37.949350106613039,36.884799819392832,35.597531566869364,33.433432190891018,32.184929216634586,29.454269325035103,28.489503907476873,27.675087440522571,27.225870359877916,34.468078553247295,35.795786849996453,37.295186976205997,36.786612952293297,37.856069943668579,39.714150377251478,39.31047297953225,35.503832779078024,10.951839434949211,28.892755952461812,23.711116780939317,21.298794316242599],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Florida","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x3","yaxis":"y3","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[66.92759188301639,66.86272330794479,69.093093749857616,69.834583248453654,76.219061982518269,77.4644096673711,78.583699974628303,0,64.973649517589408,57.129800083937816,51.421073314994032,47.313445510681923,52.213954956274115,47.05411152097237,49.304442624680355,51.725932628173823,53.126538208474486,53.629304685358811,53.702942175357016,51.009154486701355,52.769601999027309,45.104208619613239,44.436004061169278,44.831179150906152,46.884285614491915,43.693786496656891,45.922334168085847,66.054242557675153,62.921406249118824,66.826323550363654,72.066216099558503,72.956149904633591,80.518249467752241,74.307662560903793,63.885533009362035,67.75980642445424,65.596265878092026,59.275899809547539,55.786429391411176],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Michigan","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x3","yaxis":"y3","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[30.067145284928255,30.774227862926587,30.265350203822919,28.966107374451745,29.554762989223999,27.85486116437513,28.010616522383582,26.96061171091911,25.276998743734246,22.80272233410048,22.384855980538461,21.225793884891662,19.8924008256386,16.666026751965088,16.261634436352804,16.475536814807104,19.579052973696037,19.122922741879812,18.480492491823959,18.857855776080733,16.550960863886875,15.283027398380804,14.459384536141069,13.331906567264028,14.232048263396296,14.0620858011858,14.433197846904084,13.055144942428187,30.268104262525632,31.117292962393769,31.746875787559869,31.930253504262367,33.430018743646748,33.505433786647082,27.127349476410821,6.0257122583341749,29.918167341470635,26.852619196876667,19.846734686152807],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"New York","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"xaxis":"x3","yaxis":"y3","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[36.355103153061975,37.239465469154993,37.819885480942254,41.498845207368177,43.362755452284304,47.726234135184008,46.421252374669194,42.193864774248411,41.632092811142734,36.517816025724393,34.430841993744096,30.494733828147854,30.331866512204886,30.029675035512476,31.653860068114316,34.731357559633437,38.113975337593139,36.109108450458372,37.424956892754096,36.219873474700172,37.496038092839143,37.241962674910269,36.047408203507814,33.576502034539992,30.331034645321015,30.031192768467992,31.388208233789417,33.800698023717331,39.973454454566614,41.902205176712741,45.468727571841022,49.555518390346194,50.949180055635587,50.662583090229361,46.589069070392547,49.152977936227579,51.308071388775261,49.289438782060337,47.638266259955991],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Ohio","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"xaxis":"x3","yaxis":"y3","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[25.318221782811751,21.631362257384609,23.499856751502925,27.493399239329747,37.256898735749239,44.21894840935397,44.425111294159024,42.351364619964983,40.500988040476507,39.519863447949213,39.555584784349527,45.381982315179279,38.781879628432655,37.349976083308142,38.137635876466135,38.227186842491292,41.422650834582534,37.158859845847935,39.598930703953229,38.572351029552195,34.646508602035155,35.569297383192968,33.94630700604462,34.03807196904188,35.058868632653677,31.623261075958364,33.67941472817278,50.523874601399761,49.406189359520766,54.865544203485435,50.429538691356754,58.367477770375245,58.568914398059334,57.486716918936558,52.891573492338942,62.609701719116892,61.898944002245933,56.48778963424374,57.91164720532776],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"name":"Utah","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"xaxis":"x3","yaxis":"y3","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[223.94517288996195,210.77810913332817,197.71247882859296,230.94148701460577,251.52909300990416,267.56244850871991,258.29834683943295,246.49833816425627,228.76128147073788,209.00832160272199,187.14131291664671,175.30437946439338,155.51554020019222,139.16885256462433,139.8627119045988,144.01954767318426,142.2406694395508,138.23544770145944,133.34321566818096,137.2474511998563,148.06928423519341,146.35966983327859,144.02949383086411,131.73810533115019,117.99302800858445,112.99606247814644,112.37099306222116,108.0837952742193,100.14671395574091,100.2750281633958,101.77607782114936,96.216896592435759,85.845035130376786,80.076584805419671,71.171850750406279,41.709756128700604,66.517508533636786,65.516602630786849,59.763138261207835],"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x4","yaxis":"y4","frame":null,"showlegend":true},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[341.32606839797023,299.98029316030096,302.35120554208191,328.699640401772,372.04540861225559,406.22254743042635,422.49698374403414,404.03610201756504,355.27078697775579,317.57682894641448,293.98946882325572,250.60941617637869,208.41723461868713,179.17739179713047,177.25385656227789,187.39563713559536,186.20466948076131,180.40085428939855,173.06460658870537,177.02383862785535,197.50034993279792,195.03556810864328,189.56223684641523,173.17064862751181,155.68267765202225,144.18265573622492,148.88217809258791,140.17484794549574,126.10574736277241,135.68256062194286,139.84690269646345,143.83425261386378,137.65538274840841,131.73898112490406,113.08397220603293,17.196113744717547,122.42474365530956,126.17767638324064,115.93846233127252],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"California","marker":{"color":"rgba(102,194,165,1)","line":{"color":"rgba(102,194,165,1)"}},"textfont":{"color":"rgba(102,194,165,1)"},"error_y":{"color":"rgba(102,194,165,1)"},"error_x":{"color":"rgba(102,194,165,1)"},"line":{"color":"rgba(102,194,165,1)"},"xaxis":"x4","yaxis":"y4","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[366.95077482289486,356.90580942368365,0,404.80419126400619,405.75273796588999,396.9843074667246,358.07340552430367,342.07917824025458,316.94355481857298,289.21008056541962,167.28874813510208,263.94835767807626,233.22805279081041,201.87289875687696,195.61907248567769,200.6790256823912,194.21344244869641,185.32017453453096,172.17026987391216,168.56818710956674,187.75812613977331,207.4930740366778,195.5654100798794,165.5582983302528,138.34044633485371,134.43909819628024,123.60462232473697,118.44596802526766,108.71760938563112,104.3938648848372,97.664261104519142,88.648841208812627,79.428300754502956,75.422284945569444,62.384115253610886,11.263309565261444,37.838518002698208,30.941020921840721,29.594969924758953],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Florida","marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x4","yaxis":"y4","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[299.36101623889721,275.2549910035188,239.45546527564881,219.64067934719472,230.74067164920459,240.14818020336483,218.6924554267747,233.29909894158496,218.80157791362691,179.06802569724866,166.8879234770811,147.55759756983628,153.52446226836022,139.50528618640016,134.83112198503886,128.00366725652378,117.78495982811005,111.30197013251068,111.80156961765992,132.36313463839963,141.23042649815201,132.9429301277716,132.56406098429369,125.0102130051625,115.77816676470084,103.70949925989729,104.67665170107138,101.04846482899084,80.605463447174614,78.485941249824421,71.423036929237526,64.964663995618622,56.449913422098717,53.510328624911715,45.519062758030294,40.044412350489495,36.534125330555732,36.773471054676641,31.19188194538334],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Michigan","marker":{"color":"rgba(141,160,203,1)","line":{"color":"rgba(141,160,203,1)"}},"textfont":{"color":"rgba(141,160,203,1)"},"error_y":{"color":"rgba(141,160,203,1)"},"error_x":{"color":"rgba(141,160,203,1)"},"line":{"color":"rgba(141,160,203,1)"},"xaxis":"x4","yaxis":"y4","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[510.19381084468438,500.72617999772558,540.98059400236627,577.59274464905525,622.40355358568195,622.56828662254838,591.20979611986922,554.76601465233591,472.80880762015374,387.6948650255905,332.64186489897492,297.18791463328745,256.48987577566237,227.30829369172088,209.67509359649463,187.62408400679183,192.69717522390243,185.10175694655683,174.03898179006444,183.21075901301495,180.23378729481871,162.36387247034929,165.32520915098951,145.5373903005252,146.49576662286228,145.41078804041655,145.99243485850766,138.4752395825472,122.2123053074673,121.36049526356744,113.43408802578948,102.20233499741596,92.937397796895723,92.538327558640802,86.907989989242068,10.771716394915105,111.3037027931794,106.59476514775248,100.637994753979],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"New York","marker":{"color":"rgba(231,138,195,1)","line":{"color":"rgba(231,138,195,1)"}},"textfont":{"color":"rgba(231,138,195,1)"},"error_y":{"color":"rgba(231,138,195,1)"},"error_x":{"color":"rgba(231,138,195,1)"},"line":{"color":"rgba(231,138,195,1)"},"xaxis":"x4","yaxis":"y4","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[136.88381315359504,147.21995819737566,148.14949263567931,164.59177057768812,180.9803646153288,204.98344473413545,187.34420660503704,177.04488007537964,175.5219075550547,161.86202835357136,149.35745253395788,119.1591256710238,103.97350103469591,113.49346925143008,124.04581916045022,143.09670579879312,148.30088195984376,138.77826156462191,145.72680951543938,154.43170041488852,161.32441755065426,153.46331992750208,155.57439604091601,148.54848200556236,137.72889531945339,133.73279064100876,129.05965344127759,120.71677865613331,104.67391210666484,100.06432522171028,103.39193269596892,91.666559459331964,80.067891131305601,73.957789735736711,64.328003318952057,57.965501815872813,53.541072013506003,50.82867657518576,47.520453907431808],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Ohio","marker":{"color":"rgba(166,216,84,1)","line":{"color":"rgba(166,216,84,1)"}},"textfont":{"color":"rgba(166,216,84,1)"},"error_y":{"color":"rgba(166,216,84,1)"},"error_x":{"color":"rgba(166,216,84,1)"},"line":{"color":"rgba(166,216,84,1)"},"xaxis":"x4","yaxis":"y4","frame":null},{"x":[1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[58.694974964428198,52.797209256316151,54.102944762905977,51.176412656577547,56.491855757461629,55.512479070446908,54.986963734191932,56.837216946445544,61.771658081885455,63.201992674923808,63.927240935097899,64.204654813886691,64.220945908511695,52.23550725624262,52.884782459538911,51.845348478247068,49.036159866483999,52.581693350852092,51.174643359788142,45.00107620114423,48.901072141158195,54.739762855952812,53.210085207483658,47.770800034221665,45.652195845397955,38.303230831329344,37.499452402856264,42.827956543946108,43.48153260655274,44.368652189004422,49.837797037872782,47.209937820900201,38.559718412582647,34.841379706159593,36.570397100920594,32.188153681516333,29.371771427459247,26.051181132090814,28.170919562177669],"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":true,"name":"Utah","marker":{"color":"rgba(255,217,47,1)","line":{"color":"rgba(255,217,47,1)"}},"textfont":{"color":"rgba(255,217,47,1)"},"error_y":{"color":"rgba(255,217,47,1)"},"error_x":{"color":"rgba(255,217,47,1)"},"line":{"color":"rgba(255,217,47,1)"},"xaxis":"x4","yaxis":"y4","frame":null}],"layout":{"xaxis":{"domain":[0,0.44],"automargin":true,"anchor":"y"},"xaxis2":{"domain":[0.56000000000000005,1],"automargin":true,"anchor":"y2"},"xaxis3":{"domain":[0,0.44],"automargin":true,"anchor":"y3"},"xaxis4":{"domain":[0.56000000000000005,1],"automargin":true,"anchor":"y4"},"yaxis4":{"domain":[0,0.44],"automargin":true,"title":"Robbery Rate (per 100k)","anchor":"x4"},"yaxis3":{"domain":[0,0.44],"automargin":true,"title":"Rape Rate (per 100k)","anchor":"x3"},"yaxis2":{"domain":[0.56000000000000005,1],"automargin":true,"title":"Homicide Rate (per 100k)","anchor":"x2"},"yaxis":{"domain":[0.56000000000000005,1],"automargin":true,"title":"Aggravated Assault Rate (per 100k)","anchor":"x"},"annotations":[{"text":"Violent Crime Breakdown by Offense Type","x":0.5,"y":1.1499999999999999,"xref":"paper","yref":"paper","showarrow":false,"font":{"size":20}}],"shapes":[],"images":[],"margin":{"b":40,"l":60,"t":90,"r":10},"hovermode":"closest","showlegend":true,"legend":{"orientation":"h","x":0.5,"xanchor":"center","y":1.0800000000000001}},"attrs":{"61801b832791":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"inherit":true},"61803f9aaeb3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"color":{},"split":{},"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"inherit":true},"61802e32ce3f":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"inherit":true},"6180982a1cb":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"color":{},"split":{},"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"inherit":true},"61807d948d1b":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"inherit":true},"618023bc2806":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"color":{},"split":{},"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"inherit":true},"61801eea5dae":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"name":"United States","mode":"lines","type":"scatter","line":{"color":"black","width":3},"inherit":true},"61802cac5a5d":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":{},"y":{},"color":{},"split":{},"mode":"lines","type":"scatter","opacity":0.59999999999999998,"showlegend":false,"inherit":true}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"subplot":true,"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

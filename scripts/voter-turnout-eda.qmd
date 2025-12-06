@@ -36,7 +36,7 @@ state_colors <- c(
 
 ```{r}
 # Load cleaned voter turnout data for selected states
-voter_turnout <- read_csv("data/processed-data/voter_turnout_selected_states.csv")
+voter_turnout <- read_csv("../data/processed-data/voter_turnout_selected_states.csv")
 
 # Preview data
 head(voter_turnout)
@@ -260,12 +260,6 @@ plot_ly(voter_turnout, x = ~year, y = ~normalized_vep_turnout, color = ~state,
 
 **Key Observations:**
 
-- **2020 and 2024 stand out**: Most states show positive normalized turnout (above their historical average) for the 2020 and 2024 presidential elections, indicating exceptional voter engagement in recent years.
-- **Oscillating around zero**: The normalized values oscillate around the zero line (the reference line), which is expected since each state's data is centered around its own mean.
-- **Identifying unusual elections**: Elections that deviate significantly from the zero line represent unusual mobilization (high positive) or suppression/disengagement (low negative) relative to that state's typical pattern.
-- **State-specific patterns**: Some states show more volatility in normalized turnout (larger deviations from zero) than others, suggesting different levels of election-to-election stability.
-- **Recent upward trend**: Many states show an upward trajectory in normalized turnout in recent years, particularly for presidential elections, suggesting increasing civic engagement.
-- **Midterm stability**: Normalized midterm turnout appears more stable (smaller deviations) than presidential elections, indicating more consistent midterm voter behavior.
 
 ## Distribution of Normalized Turnout
 
@@ -291,11 +285,5 @@ ggplot(voter_turnout, aes(x = state, y = normalized_vep_turnout, fill = election
 
 **Key Observations:**
 
-- **Centered at zero**: By design, each state-election type combination should have a mean of approximately zero (shown by the dashed reference line), confirming the normalization was successful.
-- **California shows high variability**: California has the widest distribution of normalized turnout values for both election types, indicating the most volatile turnout patterns—some elections significantly exceed the average while others fall far below.
-- **Michigan's consistency**: Michigan shows relatively tight distributions, suggesting more stable and predictable turnout patterns over time.
-- **Presidential elections more variable**: For most states, presidential elections show wider distributions than midterm elections, indicating presidential years experience more dramatic swings in turnout relative to their averages.
-- **Symmetric distributions**: Most distributions appear roughly symmetric around zero, suggesting turnout increases and decreases are balanced over time.
-- **Outliers present**: A few states show outliers, representing elections with exceptionally unusual turnout—these.
-- **Florida's extreme outliers**: Florida shows extreme negative outliers, again reflecting the 1980-1990 data quality issues.
+
 

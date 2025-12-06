@@ -1,0 +1,64 @@
+---
+title: "Cleaning "
+author: Group 6
+date: today
+format:
+  html:
+    code-fold: true
+    toc: true
+    toc-depth: 3
+    theme: cosmo
+execute:
+  warning: false
+  message: false
+---
+
+# Setup
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+library(plotly)
+
+```
+
+# Load Data
+
+```{r}
+analysis_df <- read_csv("../data/processed-data/election_day_weather_full.csv") %>%
+  clean_names() %>%
+  arrange(state, year)
+
+head(analysis_df)
+```
+
+```{r}
+analysis_df <- analysis_df %>%
+  mutate(
+    # Temperature category: Cold vs Hot
+    temp_category = case_when(
+      !is.na(tavg) & tavg < 55 ~ "Cold",
+      !is.na(tavg)             ~ "Hot",
+      TRUE                     ~ NA_character_
+    ),
+    
+    # One final Dry/Wet column based on any precipitation
+    day_type = if_else(rain_any == 1 | snow_any == 1, "Wet", "Dry")
+  )
+
+head(
+  analysis_df %>%
+    select(state, year, tavg, rain_any, snow_any, temp_category, day_type)
+)
+
+```
+
+```{r}
+
+write_csv(
+analysis_df,
+"../data/processed-data/election_day_weather_full_cleaned.csv"
+)
+
+```
