@@ -13,43 +13,12 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```{r load-data}
 library(tidyverse)
 
-
 df <- read_csv("../data/processed-data/voter_turnout_selected_states.csv")
 
 ```
 
-## Descriptive Statistics
-```{r descriptive-stats}
-summary_stats <- df %>%
-    group_by(state_color) %>%
-    summarise(
-        n = n(),
-        mean = mean(vep_turnout_rate),
-        sd = sd(vep_turnout_rate),
-        min = min(vep_turnout_rate),
-        max = max(vep_turnout_rate),
-        .groups = "drop"
-    )
 
-knitr::kable(summary_stats, digits = 4, caption = "Descriptive Statistics by State Category")
-```
-
-
-```{r boxplot}
-ggplot(df, aes(x = state_color, y = vep_turnout_rate, fill = state_color)) +
-    geom_boxplot(alpha = 0.7) +
-    scale_fill_manual(values = c("blue" = "#2166ac", "purple" = "#7b3294", "red" = "#b2182b")) +
-    labs(
-        title = "Voter Turnout by State Political Category",
-        x = "State Category", y = "VEP Turnout Rate"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "none")
-```
-
----
-
-## Test 1: One-Way ANOVA
+## One-Way ANOVA
 
 **Hypotheses:**
 
@@ -57,17 +26,18 @@ ggplot(df, aes(x = state_color, y = vep_turnout_rate, fill = state_color)) +
 - H1: At least one group mean differs
 - Significance level: α = 0.05
 ```{r anova}
+
 anova_model <- aov(vep_turnout_rate ~ state_color, data = df)
 anova_results <- summary(anova_model)
 print(anova_results)
 
+
 f_stat <- anova_results[[1]]["state_color", "F value"]
 p_value_anova <- anova_results[[1]]["state_color", "Pr(>F)"]
 
-cat("\n----------------------------------------\n")
 cat("F-statistic:", round(f_stat, 4), "\n")
 cat("p-value:", round(p_value_anova, 6), "\n")
-cat("----------------------------------------\n")
+
 
 if (p_value_anova < 0.05) {
     cat("Conclusion: REJECT H0 - Significant difference in mean turnout\n")
@@ -78,67 +48,58 @@ if (p_value_anova < 0.05) {
 
 ---
 
-## Test 2: Independent Samples T-Tests (Pairwise Comparisons)
 
-Bonferroni-corrected significance level: α = 0.05 / 3 = 0.0167
-```{r extract-groups}
-blue_turnout <- df %>%
-    filter(state_color == "blue") %>%
-    pull(vep_turnout_rate)
-red_turnout <- df %>%
-    filter(state_color == "red") %>%
-    pull(vep_turnout_rate)
-purple_turnout <- df %>%
-    filter(state_color == "purple") %>%
-    pull(vep_turnout_rate)
+## T-Test for Election Type
 
-alpha_bonferroni <- 0.05 / 3
-```
+**Hypotheses:**
 
-### T-Test 2a: Red States vs Blue States
+- H0: Mean turnout is equal for Presidential and Midterm elections
+- H1: Mean turnout differs
+- Significance level: α = 0.05
 
-```{r ttest-red-blue}
-ttest_rb <- t.test(red_turnout, blue_turnout, var.equal = FALSE)
+```{r ttest-election}
+ttest_election <- t.test(vep_turnout_rate ~ election_type, data = df)
 
-cat("Red mean:", round(mean(red_turnout), 4), "| Blue mean:", round(mean(blue_turnout), 4), "\n")
-cat("t-statistic:", round(ttest_rb$statistic, 4), "| p-value:", round(ttest_rb$p.value, 6), "\n")
-cat("Conclusion:", ifelse(ttest_rb$p.value < alpha_bonferroni, "REJECT H0", "FAIL TO REJECT H0"), "\n")
-```
+cat("Mean by Group:\n")
+print(ttest_election$estimate)
+cat("t-statistic:", round(ttest_election$statistic, 4), "| p-value:", round(ttest_election$p.value, 6), "\n")
 
-### T-Test 2b: Red States vs Purple States
 
-```{r ttest-red-purple}
-ttest_rp <- t.test(red_turnout, purple_turnout, var.equal = FALSE)
-
-cat("Red mean:", round(mean(red_turnout), 4), "| Purple mean:", round(mean(purple_turnout), 4), "\n")
-cat("t-statistic:", round(ttest_rp$statistic, 4), "| p-value:", round(ttest_rp$p.value, 6), "\n")
-cat("Conclusion:", ifelse(ttest_rp$p.value < alpha_bonferroni, "REJECT H0", "FAIL TO REJECT H0"), "\n")
-```
-
-### T-Test 2c: Blue States vs Purple States
-```{r ttest-blue-purple}
-ttest_bp <- t.test(blue_turnout, purple_turnout, var.equal = FALSE)
-
-cat("Blue mean:", round(mean(blue_turnout), 4), "| Purple mean:", round(mean(purple_turnout), 4), "\n")
-cat("t-statistic:", round(ttest_bp$statistic, 4), "| p-value:", round(ttest_bp$p.value, 6), "\n")
-cat("Conclusion:", ifelse(ttest_bp$p.value < alpha_bonferroni, "REJECT H0", "FAIL TO REJECT H0"), "\n")
+if (ttest_election$p.value < 0.05) {
+    cat("Conclusion: REJECT H0 - Significant difference in mean turnout\n")
+} else {
+    cat("Conclusion: FAIL TO REJECT H0 - No significant difference\n")
+}
 ```
 
 ---
 
 ## Test 3: Chi-Square Tests
 
-### Chi-Square 3a: Election Type vs State Category
+### Chi-Square 3a: Turnout Level (High/Low) vs Election Type
 ```{r chisq-election}
-contingency_election <- table(df$election_type, df$state_color)
+# Create turnout category
+median_turnout <- median(df$vep_turnout_rate)
+df <- df %>%
+    mutate(turnout_category = ifelse(vep_turnout_rate >= median_turnout, "High", "Low"))
+
+
+contingency_election <- table(df$election_type, df$turnout_category)
 cat("Contingency Table:\n")
 print(contingency_election)
+
+
 
 chisq_election <- chisq.test(contingency_election)
 cat("\nExpected Frequencies:\n")
 print(round(chisq_election$expected, 2))
 
-cat("\n----------------------------------------\n")
+
+
+cat("\nStandardized Residuals (Positive > 2 means observed > expected significantly):\n")
+print(round(chisq_election$stdres, 2))
+
+
 cat("Chi-square:", round(chisq_election$statistic, 4), "| df:", chisq_election$parameter, "\n")
 cat("p-value:", round(chisq_election$p.value, 6), "\n")
 cat("Conclusion:", ifelse(chisq_election$p.value < 0.05, "NOT Independent", "Independent"), "\n")
@@ -146,6 +107,7 @@ cat("Conclusion:", ifelse(chisq_election$p.value < 0.05, "NOT Independent", "Ind
 
 ### Chi-Square 3b: Turnout Level (High/Low) vs State Category
 ```{r chisq-turnout}
+# Ensure turnout category exists
 median_turnout <- median(df$vep_turnout_rate)
 df <- df %>%
     mutate(turnout_category = ifelse(vep_turnout_rate >= median_turnout, "High", "Low"))
@@ -155,7 +117,13 @@ cat("Contingency Table:\n")
 print(contingency_turnout)
 
 chisq_turnout <- chisq.test(contingency_turnout)
-cat("\n----------------------------------------\n")
+
+cat("\nStandardized Residuals:\n")
+print(round(chisq_turnout$stdres, 2))
+
+
+
+
 cat("Chi-square:", round(chisq_turnout$statistic, 4), "| df:", chisq_turnout$parameter, "\n")
 cat("p-value:", round(chisq_turnout$p.value, 6), "\n")
 cat("Conclusion:", ifelse(chisq_turnout$p.value < 0.05, "NOT Independent", "Independent"), "\n")
@@ -167,26 +135,23 @@ cat("Conclusion:", ifelse(chisq_turnout$p.value < 0.05, "NOT Independent", "Inde
 ```{r summary-table}
 summary_results <- tibble(
     Test = c(
-        "ANOVA", "Red vs Blue", "Red vs Purple", "Blue vs Purple",
-        "Election x State", "Turnout x State"
+        "ANOVA",
+        "Election Type (T-Test)",
+        "Election x Turnout", "Turnout x State"
     ),
     Statistic = c(
         paste0("F=", round(f_stat, 4)),
-        paste0("t=", round(ttest_rb$statistic, 4)),
-        paste0("t=", round(ttest_rp$statistic, 4)),
-        paste0("t=", round(ttest_bp$statistic, 4)),
+        paste0("t=", round(ttest_election$statistic, 4)),
         paste0("X2=", round(chisq_election$statistic, 4)),
         paste0("X2=", round(chisq_turnout$statistic, 4))
     ),
     p_value = round(c(
-        p_value_anova, ttest_rb$p.value, ttest_rp$p.value,
-        ttest_bp$p.value, chisq_election$p.value, chisq_turnout$p.value
+        p_value_anova,
+        ttest_election$p.value, chisq_election$p.value, chisq_turnout$p.value
     ), 6),
     Decision = c(
         ifelse(p_value_anova < 0.05, "Sig", "Not Sig"),
-        ifelse(ttest_rb$p.value < alpha_bonferroni, "Sig", "Not Sig"),
-        ifelse(ttest_rp$p.value < alpha_bonferroni, "Sig", "Not Sig"),
-        ifelse(ttest_bp$p.value < alpha_bonferroni, "Sig", "Not Sig"),
+        ifelse(ttest_election$p.value < 0.05, "Sig", "Not Sig"),
         ifelse(chisq_election$p.value < 0.05, "Dependent", "Independent"),
         ifelse(chisq_turnout$p.value < 0.05, "Dependent", "Independent")
     )
