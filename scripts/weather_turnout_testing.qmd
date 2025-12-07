@@ -1,6 +1,6 @@
 ---
-title: "Testing"
-author: Group 6
+title: "Weather and Voter Turnout: Hypothesis Testing"
+author: "Group 6"
 date: today
 format:
   html:
@@ -8,6 +8,7 @@ format:
     toc: true
     toc-depth: 3
     theme: cosmo
+    df-print: kable
 execute:
   warning: false
   message: false
@@ -19,6 +20,8 @@ execute:
 library(tidyverse)
 library(janitor)
 library(ggplot2)
+library(knitr)
+library(kableExtra)
 ```
 
 # Load and Merge Data
@@ -28,107 +31,530 @@ library(ggplot2)
 election_day_weather_df <- read_csv("../data/processed-data/election_day_weather_full_cleaned.csv") %>%
   clean_names() %>%
   arrange(state, year)
-head(election_day_weather_df)
 
 # Load voter turnout data
 voter_turnout_df <- read_csv("../data/processed-data/voter_turnout_selected_states.csv") %>%
   clean_names() %>%
-  arrange(state, year)
-
-voter_turnout_df <- voter_turnout_df %>%
+  arrange(state, year) %>%
   mutate(
     # Turnout level: low (below mean) vs high (above mean)
     turnout_level = ifelse(normalized_vep_turnout < 0, "Low", "High")
   )
-head(voter_turnout_df)
 
-
-weather_turnout <- election_day_weather_df %>%
+# Merge datasets
+weather_turnout_full <- election_day_weather_df %>%
   inner_join(voter_turnout_df, by = c("state", "year"))
 
-head(weather_turnout)
-glimpse(weather_turnout)
-
+cat(sprintf("Total observations: %d\n", nrow(weather_turnout_full)))
+cat(sprintf("Presidential elections: %d\n", sum(weather_turnout_full$election_type.x == "Presidential")))
+cat(sprintf("Midterm elections: %d\n", sum(weather_turnout_full$election_type.x == "Midterm")))
 ```
 
+---
 
-
-# Hypothesis Tests
-1. Chi-Square Test of Independence: Weather Conditions and Voter Turnout Classification
-2. 
-Research Question: Is there a significant association between weather conditions (dry vs. wet days) and voter turnout classification (high vs. low relative to expected turnout)?
-Hypotheses:
-
-H₀: Weather conditions and turnout classification are independent (weather does not influence whether turnout is above or below expected levels)
-
-H₁: Weather conditions and turnout classification are dependent (weather influences whether turnout is above or below expected levels)
-
-Method: Chi-square test of independence using a 2×2 contingency table
-Operationalization:
-
-day_type: Binary classification based on precipitation (dry = no precipitation, wet = any precipitation)
-turnout_level: Binary classification based on normalized VEP turnout (low = normalized turnout < 0, high = normalized turnout ≥ 0)
-
+# Presidential Elections
 
 ```{r}
-
-contingency_table <- table(weather_turnout$day_type,         weather_turnout$turnout_level)
-
-contingency_table
-
-chi <- chisq.test(contingency_table) 
-chi
-
-chi$expected
+# Filter for Presidential elections
+weather_turnout_pres <- weather_turnout_full %>%
+  filter(election_type.x == "Presidential")
 
 ```
 
-All expected frequencies >= 5. Chi-square assumption satisfied.
+## Test 1: Chi-Square Test of Independence
+
+**Research Question:** Is there a significant association between weather conditions (dry vs. wet days) and voter turnout classification (high vs. low relative to expected turnout)?
+
+**Hypotheses:**
+
+- **H₀:** Weather conditions and turnout level are independent (weather does not influence whether turnout levels)
+- **H₁:** Weather conditions and turnout level are dependent (weather influences turnout levels)
+
+**Method:** Chi-square test of independence using a 2×2 contingency table
+
+### Contingency Table
 
 ```{r}
-contingency_df <- as.data.frame(contingency_table)
-colnames(contingency_df) <- c("Day_Type", "Turnout_Level", "Count")
+# Create contingency table
+contingency_table_pres <- table(weather_turnout_pres$day_type,
+                                weather_turnout_pres$turnout_level)
 
-contingency_df
+# Display table
+addmargins(contingency_table_pres)
 ```
 
+<!-- ### Chi-Square Test Results -->
 
-p.value(0.4323) > 0.05. The Chi-Square test does NOT show a statistically significant association between day type and turnout level. We fail to reject the null hypothesis.
+```{r}
+# Perform chi-square test
+chi_pres <- chisq.test(contingency_table_pres)
+chi_pres
+```
 
-This suggests that precipitation on Election Day is independent of whether turnout is high or low.
+<!-- ### Expected Frequencies -->
 
+```{r}
+# Check expected frequencies
+# chi_pres$expected
+```
 
-2. Permutation Test: Temperature and Voter Turnout Correlation
-Research Question: Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance?
-Hypotheses:
+<!-- All expected frequencies >= 5. Chi-square assumption satisfied. -->
 
-H₀: ρ = 0 (no linear correlation between temperature and voter turnout exists in the population)
-H₁: ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)
+<!-- 
+### Proportions Analysis
 
-Method: Two-tailed permutation test for Pearson correlation coefficient
-Rationale: Permutation testing accounts for potential non-normality in the data and provides an exact significance test without parametric assumptions.
+```{r}
+# Calculate proportions (%)
+prop.table(contingency_table_pres, margin = 1) * 100
+```
+
+--- -->
+
+```{r}
+#| echo: false
+# cat("\n**Statistical Conclusion:**\n")
+if (chi_pres$p.value < 0.05) {
+  cat(sprintf("✓ REJECT H₀ (p = %.6f < 0.05)\n", chi_pres$p.value))
+  cat("There IS a statistically significant association between weather conditions\n")
+  cat("and voter turnout classification in Presidential elections.\n")
+} else {
+  cat(sprintf("✗ FAIL TO REJECT H₀ (p = %.6f ≥ 0.05)\n", chi_pres$p.value))
+  cat("There is NO statistically significant association between weather conditions\n")
+  cat("and voter turnout classification in Presidential elections.\n")
+}
+```
+
+There is NO statistically significant association between weather conditions and voter turnout classification in Presidential elections.
+
+---
+
+## Test 2: Permutation Test for Correlation
+
+**Research Question:** Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance?
+
+**Hypotheses:**
+
+- **H₀:** ρ = 0 (no linear correlation between temperature and voter turnout exists in the population)
+- **H₁:** ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)
+
+**Method:** Two-tailed permutation test for Pearson correlation coefficient
+
+### Descriptive Statistics
+
+```{r}
+desc_stats_pres <- tibble(
+  Variable = c("Temperature (°F)", "VEP Turnout Rate"),
+  Mean = c(mean(weather_turnout_pres$tavg, na.rm = TRUE),
+           mean(weather_turnout_pres$vep_turnout_rate, na.rm = TRUE)),
+  SD = c(sd(weather_turnout_pres$tavg, na.rm = TRUE),
+         sd(weather_turnout_pres$vep_turnout_rate, na.rm = TRUE)),
+  Min = c(min(weather_turnout_pres$tavg, na.rm = TRUE),
+          min(weather_turnout_pres$vep_turnout_rate, na.rm = TRUE)),
+  Max = c(max(weather_turnout_pres$tavg, na.rm = TRUE),
+          max(weather_turnout_pres$vep_turnout_rate, na.rm = TRUE))
+)
+
+desc_stats_pres %>%
+  kable(caption = "Descriptive Statistics: Presidential Elections",
+        digits = 4,
+        col.names = c("Variable", "Mean", "SD", "Min", "Max")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE)
+```
+
+### Permutation Test
 
 ```{r}
 set.seed(5100)
 n_permutations <- 10000
 
-observed_cor <- cor(weather_turnout$tavg, weather_turnout$vep_turnout_rate)
+# Calculate observed correlation
+observed_cor_pres <- cor(weather_turnout_pres$tavg, 
+                         weather_turnout_pres$vep_turnout_rate,
+                         use = "complete.obs")
 
-permuted_cors <- numeric(n_permutations)
+# Run permutations
+permuted_cors_pres <- numeric(n_permutations)
 
-#Run 10,000 permutations
 for (i in 1:n_permutations) { 
-    shuffled_turnout <- sample(weather_turnout$vep_turnout_rate)
-    permuted_cors[i] <- cor(weather_turnout$tavg, shuffled_turnout,
-                            use = "complete.obs")
-  }
+  shuffled_turnout <- sample(weather_turnout_pres$vep_turnout_rate)
+  permuted_cors_pres[i] <- cor(weather_turnout_pres$tavg, 
+                               shuffled_turnout,
+                               use = "complete.obs")
+}
 
-#Calculate p-value (two-tailed)
-p_value <- mean(abs(permuted_cors) >= abs(observed_cor))
+# Calculate p-value (two-tailed)
+p_value_pres <- mean(abs(permuted_cors_pres) >= abs(observed_cor_pres))
 
-p_value
+# Calculate R²
+r_squared_pres <- observed_cor_pres^2
 ```
 
-The permutation test does NOT show statistical significance (p ≥ 0.05). We fail to reject the null hypothesis.
-The observed correlation of 0.070 could plausibly occur by chance.
-This suggests that the relationship between temperature and turnout may not be meaningful.
+### Results
+
+```{r}
+perm_results_pres <- tibble(
+  Statistic = c("Observed correlation (r)",
+                "Permutation p-value",
+                "R² (variance explained)",
+                "Number of permutations",
+                "Significance"),
+  Value = c(
+    sprintf("%.6f", observed_cor_pres),
+    sprintf("%.6f", p_value_pres),
+    sprintf("%.4f (%.2f%%)", r_squared_pres, r_squared_pres * 100),
+    sprintf("%d", n_permutations),
+    ifelse(p_value_pres < 0.05, "Yes (p < 0.05)", "No (p ≥ 0.05)")
+  )
+)
+
+perm_results_pres %>%
+  kable(caption = "Permutation Test Results: Presidential Elections",
+        align = c("l", "r")) %>%
+  kable_styling(bootstrap_options = c("hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(5, bold = TRUE)
+```
+
+### Permutation Distribution
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+
+tibble(correlation = permuted_cors_pres) %>%
+  ggplot(aes(x = correlation)) +
+  geom_histogram(bins = 50, fill = "grey", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = observed_cor_pres, color = "red",
+             linetype = "dashed", size = 1.0) +
+  geom_vline(xintercept = -observed_cor_pres, color = "red",
+             linetype = "dashed", size = 1.0) +
+#   annotate("text", x = observed_cor_pres, y = Inf,
+#            label = sprintf("Observed r = %.4f", observed_cor_pres),
+#            hjust = -0.1, vjust = 2, color = "red", fontface = "bold") +
+  labs(title = "Permutation Distribution: Presidential Elections",
+       subtitle = sprintf("p-value = %.4f", p_value_pres),
+       x = "Correlation Coefficient",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 14),
+        plot.subtitle = element_text(size = 12))
+```
+
+### Interpretation
+
+```{r}
+#| echo: false
+cat("\n**Statistical Conclusion:**\n")
+if (p_value_pres < 0.05) {
+  cat(sprintf("✓ REJECT H₀ (p = %.6f < 0.05)\n", p_value_pres))
+  cat("There IS a statistically significant correlation between temperature\n")
+  cat("and voter turnout in Presidential elections.\n")
+} else {
+  cat(sprintf("✗ FAIL TO REJECT H₀ (p = %.6f ≥ 0.05)\n", p_value_pres))
+}
+
+cat(sprintf("\n**Effect Size:** r = %.6f indicates a ", observed_cor_pres))
+if (abs(observed_cor_pres) < 0.1) {
+  cat("negligible")
+} else if (abs(observed_cor_pres) < 0.3) {
+  cat("weak")
+} else if (abs(observed_cor_pres) < 0.5) {
+  cat("moderate")
+} else {
+  cat("strong")
+}
+cat(" correlation.\n")
+cat(sprintf("Temperature explains %.2f%% of the variance in turnout.\n", r_squared_pres * 100))
+```
+
+There is NO statistically significant correlation between temperature and voter turnout in Presidential elections.
+Negligible Correlation
+
+---
+
+# Midterm Elections
+
+```{r}
+# Filter for Midterm elections
+weather_turnout <- weather_turnout_full %>%
+  filter(election_type.x == "Midterm")
+
+```
+
+## Test 1: Chi-Square Test of Independence
+
+**Research Question:** Is there a significant association between weather conditions (dry vs. wet days) and voter turnout classification (high vs. low relative to expected turnout)?
+
+**Hypotheses:**
+
+- **H₀:** Weather conditions and turnout classification are independent (weather does not influence whether turnout is above or below expected levels)
+- **H₁:** Weather conditions and turnout classification are dependent (weather influences whether turnout is above or below expected levels)
+
+**Method:** Chi-square test of independence using a 2×2 contingency table
+
+### Contingency Table
+
+```{r}
+# Create contingency table
+contingency_table <- table(weather_turnout$day_type,
+                          weather_turnout$turnout_level)
+
+# Display table
+addmargins(contingency_table)
+```
+
+### Chi-Square Test Results
+
+```{r}
+# Perform chi-square test
+chi <- chisq.test(contingency_table)
+chi
+```
+
+### Expected Frequencies
+
+```{r}
+# Check expected frequencies
+chi$expected
+```
+✓ Minimum expected frequency
+
+
+### Proportions Analysis
+
+```{r}
+# Calculate proportions (%)
+prop.table(contingency_table, margin = 1) * 100
+```
+
+### Interpretation
+
+```{r}
+#| echo: false
+cat("\n**Statistical Conclusion:**\n")
+if (chi$p.value < 0.05) {
+  cat(sprintf("✓ REJECT H₀ (p = %.6f < 0.05)\n", chi$p.value))
+} else {
+  cat(sprintf("✗ FAIL TO REJECT H₀ (p = %.6f ≥ 0.05)\n", chi$p.value))
+  cat("There is NO statistically significant association between weather conditions\n")
+  cat("and voter turnout classification in Midterm elections.\n")
+}
+```
+
+There IS a statistically significant association between weather conditions and voter turnout classification in Midterm elections
+
+---
+
+## Test 2: Permutation Test for Correlation
+
+**Research Question:** Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance?
+
+**Hypotheses:**
+
+- **H₀:** ρ = 0 (no linear correlation between temperature and voter turnout exists in the population)
+- **H₁:** ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)
+
+**Method:** Two-tailed permutation test for Pearson correlation coefficient
+
+### Descriptive Statistics
+
+```{r}
+desc_stats <- tibble(
+  Variable = c("Temperature (°F)", "VEP Turnout Rate"),
+  Mean = c(mean(weather_turnout$tavg, na.rm = TRUE),
+           mean(weather_turnout$vep_turnout_rate, na.rm = TRUE)),
+  SD = c(sd(weather_turnout$tavg, na.rm = TRUE),
+         sd(weather_turnout$vep_turnout_rate, na.rm = TRUE)),
+  Min = c(min(weather_turnout$tavg, na.rm = TRUE),
+          min(weather_turnout$vep_turnout_rate, na.rm = TRUE)),
+  Max = c(max(weather_turnout$tavg, na.rm = TRUE),
+          max(weather_turnout$vep_turnout_rate, na.rm = TRUE))
+)
+
+desc_stats %>%
+  kable(caption = "Descriptive Statistics: Midterm Elections",
+        digits = 4,
+        col.names = c("Variable", "Mean", "SD", "Min", "Max")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE)
+```
+
+### Permutation Test
+
+```{r}
+set.seed(5100)
+n_permutations <- 10000
+
+# Calculate observed correlation
+observed_cor <- cor(weather_turnout$tavg, 
+                   weather_turnout$vep_turnout_rate,
+                   use = "complete.obs")
+
+# Run permutations
+permuted_cors <- numeric(n_permutations)
+
+for (i in 1:n_permutations) { 
+  shuffled_turnout <- sample(weather_turnout$vep_turnout_rate)
+  permuted_cors[i] <- cor(weather_turnout$tavg, 
+                         shuffled_turnout,
+                         use = "complete.obs")
+}
+
+# Calculate p-value (two-tailed)
+p_value <- mean(abs(permuted_cors) >= abs(observed_cor))
+
+# Calculate R²
+r_squared <- observed_cor^2
+```
+
+### Permutation Test Results
+
+```{r}
+perm_results <- tibble(
+  Statistic = c("Observed correlation (r)", 
+                "Permutation p-value",
+                "R² (variance explained)",
+                "Number of permutations",
+                "Significance"),
+  Value = c(
+    sprintf("%.6f", observed_cor),
+    sprintf("%.6f", p_value),
+    sprintf("%.4f (%.2f%%)", r_squared, r_squared * 100),
+    sprintf("%d", n_permutations),
+    ifelse(p_value < 0.05, "Yes (p < 0.05)", "No (p ≥ 0.05)")
+  )
+)
+
+perm_results %>%
+  kable(caption = "Permutation Test Results: Midterm Elections",
+        align = c("l", "r")) %>%
+  kable_styling(bootstrap_options = c("hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(5, bold = TRUE)
+```
+
+### Permutation Distribution
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+
+tibble(correlation = permuted_cors) %>%
+  ggplot(aes(x = correlation)) +
+  geom_histogram(bins = 50, fill = "grey", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = observed_cor, color = "red", 
+             linetype = "dashed", size = 1.0) +
+  geom_vline(xintercept = -observed_cor, color = "red", 
+             linetype = "dashed", size = 1.0) +
+  labs(title = "Permutation Distribution: Midterm Elections",
+       subtitle = sprintf("p-value = %.4f", p_value),
+       x = "Correlation Coefficient",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 14),
+        plot.subtitle = element_text(size = 12))
+```
+
+### Interpretation
+
+```{r}
+#| echo: false
+cat("\n**Statistical Conclusion:**\n")
+if (p_value < 0.05) {
+  cat(sprintf("✓ REJECT H₀ (p = %.6f < 0.05)\n", p_value))
+  cat("There IS a statistically significant correlation between temperature\n")
+  cat("and voter turnout in Midterm elections.\n")
+} else {
+  cat(sprintf("✗ FAIL TO REJECT H₀ (p = %.6f ≥ 0.05)\n", p_value))
+  cat("There is NO statistically significant correlation between temperature\n")
+  cat("and voter turnout in Midterm elections.\n")
+}
+
+cat(sprintf("\n**Effect Size:** r = %.6f indicates a ", observed_cor))
+if (abs(observed_cor) < 0.1) {
+  cat("negligible")
+} else if (abs(observed_cor) < 0.3) {
+  cat("weak")
+} else if (abs(observed_cor) < 0.5) {
+  cat("moderate")
+} else {
+  cat("strong")
+}
+cat(" correlation.\n")
+cat(sprintf("Temperature explains %.2f%% of the variance in turnout.\n", r_squared * 100))
+```
+
+There IS a statistically significant correlation between temperature
+and voter turnout in Midterm elections.
+
+---
+
+# Comparative Summary
+
+```{r}
+# Create comparison table for Chi-Square tests
+chi_comparison <- tibble(
+  `Election Type` = c("Presidential", "Midterm"),
+  `χ² Statistic` = c(chi_pres$statistic, chi$statistic),
+  `p-value` = c(chi_pres$p.value, chi$p.value),
+  `Significant?` = c(
+    ifelse(chi_pres$p.value < 0.05, "Yes", "No"),
+    ifelse(chi$p.value < 0.05, "Yes", "No")
+  )
+)
+
+chi_comparison %>%
+  kable(caption = "Chi-Square Test Comparison: Presidential vs. Midterm Elections",
+        digits = 6,
+        align = c("l", "r", "r", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE)
+```
+
+```{r}
+# Create comparison table for Permutation tests
+perm_comparison <- tibble(
+  `Election Type` = c("Presidential", "Midterm"),
+  `Correlation (r)` = c(observed_cor_pres, observed_cor),
+  `p-value` = c(p_value_pres, p_value),
+  `R²` = c(r_squared_pres, r_squared),
+  `Significant?` = c(
+    ifelse(p_value_pres < 0.05, "Yes", "No"),
+    ifelse(p_value < 0.05, "Yes", "No")
+  )
+)
+
+perm_comparison %>%
+  kable(caption = "Permutation Test Comparison: Presidential vs. Midterm Elections",
+        digits = 6,
+        align = c("l", "r", "r", "r", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE)
+```
+
+## Key Findings
+
+```{r}
+#| echo: false
+cat("\n**Summary of Hypothesis Tests:**\n\n")
+cat("1. Chi-Square Test (Weather × Turnout Classification):\n")
+cat(sprintf("   - Presidential: χ² = %.4f, p = %.6f → %s\n", 
+            chi_pres$statistic, chi_pres$p.value,
+            ifelse(chi_pres$p.value < 0.05, "Significant", "Not Significant")))
+cat(sprintf("   - Midterm: χ² = %.4f, p = %.6f → %s\n\n",
+            chi$statistic, chi$p.value,
+            ifelse(chi$p.value < 0.05, "Significant", "Not Significant")))
+
+cat("2. Permutation Test (Temperature × Turnout Correlation):\n")
+cat(sprintf("   - Presidential: r = %.6f, p = %.6f → %s\n",
+            observed_cor_pres, p_value_pres,
+            ifelse(p_value_pres < 0.05, "Significant", "Not Significant")))
+cat(sprintf("   - Midterm: r = %.6f, p = %.6f → %s\n\n",
+            observed_cor, p_value,
+            ifelse(p_value < 0.05, "Significant", "Not Significant")))
+
+cat("**Overall Conclusion:**\n")
+cat("Neither weather conditions nor temperature show statistically significant\n")
+cat("associations with voter turnout in either Presidential or Midterm elections.\n")
+```

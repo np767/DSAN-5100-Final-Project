@@ -36,7 +36,7 @@ state_colors <- c(
 # Load Data
 
 ```{r}
-analysis_df <- read_csv("../data/processed-data/election_day_weather_full.csv") %>%
+analysis_df <- read_csv("../data/processed-data/election_day_weather_full_cleaned.csv") %>%
   clean_names() %>%
   arrange(state, year)
 
@@ -296,4 +296,29 @@ cat(sprintf("95%% CI: [%.3f, %.3f]\n",
 - **Sample size considerations**: With 20-25 election cycles per state, small sample sizes limit statistical power to detect weak relationships even if they exist.
 - **Overall pattern**: The combined analysis across all states confirms the weak relationship, suggesting that Election Day weather is not a major driver of voter turnout in these six states during the 1980-2024 period.
 
-``
+# Weather Conditions Analysis
+
+## Temperature Distributions by State and Election Type
+
+```{r}
+# Create faceted density plots
+ggplot(analysis_df, aes(x = tavg, fill = election_type)) +
+  geom_density(alpha = 0.6) +
+  facet_wrap(~state, ncol = 3, scales = "free_y") +
+  scale_fill_manual(values = c("Presidential" = "#E74C3C", "Midterm" = "#3498DB")) +
+  geom_vline(xintercept = 55, linetype = "dashed", color = "black", alpha = 0.5) +
+  labs(
+    title = "Temperature Distribution by State and Election Type",
+    subtitle = "Dashed line shows 55°F threshold (Hot/Cold boundary)",
+    x = "Average Temperature (°F)",
+    y = "Density",
+    fill = "Election Type"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        strip.text = element_text(face = "bold"))
+```
+
+**Interpretation:** This reveals whether presidential and midterm elections experience different weather patterns within each state. The dashed line at 55°F shows the threshold between hot and cold categories.
+
+

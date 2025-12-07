@@ -9,7 +9,7 @@
 <meta name="author" content="Group 6">
 <meta name="dcterms.date" content="2025-12-06">
 
-<title>Testing</title>
+<title>Weather and Voter Turnout: Hypothesis Testing</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -71,6 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="weather_turnout_testing_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="weather_turnout_testing_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="weather_turnout_testing_files/libs/bootstrap/bootstrap-8a894fcc3cb5e37eb5bf30def131be2f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="weather_turnout_testing_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="weather_turnout_testing_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
 </head>
@@ -85,7 +87,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
   <li><a href="#load-and-merge-data" id="toc-load-and-merge-data" class="nav-link" data-scroll-target="#load-and-merge-data">Load and Merge Data</a></li>
-  <li><a href="#hypothesis-tests" id="toc-hypothesis-tests" class="nav-link" data-scroll-target="#hypothesis-tests">Hypothesis Tests</a></li>
+  <li><a href="#presidential-elections" id="toc-presidential-elections" class="nav-link" data-scroll-target="#presidential-elections">Presidential Elections</a>
+  <ul class="collapse">
+  <li><a href="#test-1-chi-square-test-of-independence" id="toc-test-1-chi-square-test-of-independence" class="nav-link" data-scroll-target="#test-1-chi-square-test-of-independence">Test 1: Chi-Square Test of Independence</a>
+  <ul class="collapse">
+  <li><a href="#contingency-table" id="toc-contingency-table" class="nav-link" data-scroll-target="#contingency-table">Contingency Table</a></li>
+  </ul></li>
+  <li><a href="#test-2-permutation-test-for-correlation" id="toc-test-2-permutation-test-for-correlation" class="nav-link" data-scroll-target="#test-2-permutation-test-for-correlation">Test 2: Permutation Test for Correlation</a>
+  <ul class="collapse">
+  <li><a href="#descriptive-statistics" id="toc-descriptive-statistics" class="nav-link" data-scroll-target="#descriptive-statistics">Descriptive Statistics</a></li>
+  <li><a href="#permutation-test" id="toc-permutation-test" class="nav-link" data-scroll-target="#permutation-test">Permutation Test</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#permutation-distribution" id="toc-permutation-distribution" class="nav-link" data-scroll-target="#permutation-distribution">Permutation Distribution</a></li>
+  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation">Interpretation</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#midterm-elections" id="toc-midterm-elections" class="nav-link" data-scroll-target="#midterm-elections">Midterm Elections</a>
+  <ul class="collapse">
+  <li><a href="#test-1-chi-square-test-of-independence-1" id="toc-test-1-chi-square-test-of-independence-1" class="nav-link" data-scroll-target="#test-1-chi-square-test-of-independence-1">Test 1: Chi-Square Test of Independence</a>
+  <ul class="collapse">
+  <li><a href="#contingency-table-1" id="toc-contingency-table-1" class="nav-link" data-scroll-target="#contingency-table-1">Contingency Table</a></li>
+  <li><a href="#chi-square-test-results" id="toc-chi-square-test-results" class="nav-link" data-scroll-target="#chi-square-test-results">Chi-Square Test Results</a></li>
+  <li><a href="#expected-frequencies" id="toc-expected-frequencies" class="nav-link" data-scroll-target="#expected-frequencies">Expected Frequencies</a></li>
+  <li><a href="#proportions-analysis" id="toc-proportions-analysis" class="nav-link" data-scroll-target="#proportions-analysis">Proportions Analysis</a></li>
+  <li><a href="#interpretation-1" id="toc-interpretation-1" class="nav-link" data-scroll-target="#interpretation-1">Interpretation</a></li>
+  </ul></li>
+  <li><a href="#test-2-permutation-test-for-correlation-1" id="toc-test-2-permutation-test-for-correlation-1" class="nav-link" data-scroll-target="#test-2-permutation-test-for-correlation-1">Test 2: Permutation Test for Correlation</a>
+  <ul class="collapse">
+  <li><a href="#descriptive-statistics-1" id="toc-descriptive-statistics-1" class="nav-link" data-scroll-target="#descriptive-statistics-1">Descriptive Statistics</a></li>
+  <li><a href="#permutation-test-1" id="toc-permutation-test-1" class="nav-link" data-scroll-target="#permutation-test-1">Permutation Test</a></li>
+  <li><a href="#permutation-test-results" id="toc-permutation-test-results" class="nav-link" data-scroll-target="#permutation-test-results">Permutation Test Results</a></li>
+  <li><a href="#permutation-distribution-1" id="toc-permutation-distribution-1" class="nav-link" data-scroll-target="#permutation-distribution-1">Permutation Distribution</a></li>
+  <li><a href="#interpretation-2" id="toc-interpretation-2" class="nav-link" data-scroll-target="#interpretation-2">Interpretation</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#comparative-summary" id="toc-comparative-summary" class="nav-link" data-scroll-target="#comparative-summary">Comparative Summary</a>
+  <ul class="collapse">
+  <li><a href="#key-findings" id="toc-key-findings" class="nav-link" data-scroll-target="#key-findings">Key Findings</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -93,7 +132,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Testing</h1>
+<h1 class="title">Weather and Voter Turnout: Hypothesis Testing</h1>
 </div>
 
 
@@ -129,7 +168,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -142,210 +183,828 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>election_day_weather_df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/processed-data/election_day_weather_full_cleaned.csv"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(state, year)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(election_day_weather_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Load voter turnout data</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>voter_turnout_df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/processed-data/voter_turnout_selected_states.csv"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(state, year) <span class="sc">%&gt;%</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Turnout level: low (below mean) vs high (above mean)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">turnout_level =</span> <span class="fu">ifelse</span>(normalized_vep_turnout <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="st">"Low"</span>, <span class="st">"High"</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge datasets</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>weather_turnout_full <span class="ot">&lt;-</span> election_day_weather_df <span class="sc">%&gt;%</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(voter_turnout_df, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"state"</span>, <span class="st">"year"</span>))</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Total observations: %d</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">nrow</span>(weather_turnout_full)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 18
-  state      state_abb  year election_type election_date station_id station_name
-  &lt;chr&gt;      &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;         &lt;date&gt;        &lt;chr&gt;      &lt;chr&gt;       
-1 California CA         1980 Presidential  1980-11-04    USW000232… SACRAMENTO …
-2 California CA         1982 Midterm       1982-11-02    USW000232… SACRAMENTO …
-3 California CA         1984 Presidential  1984-11-06    USW000232… SACRAMENTO …
-4 California CA         1986 Midterm       1986-11-04    USW000232… SACRAMENTO …
-5 California CA         1988 Presidential  1988-11-08    USW000232… SACRAMENTO …
-6 California CA         1990 Midterm       1990-11-06    USW000232… SACRAMENTO …
-# ℹ 11 more variables: latitude &lt;dbl&gt;, longitude &lt;dbl&gt;, tmax &lt;dbl&gt;, tmin &lt;dbl&gt;,
-#   prcp &lt;dbl&gt;, snow &lt;dbl&gt;, tavg &lt;dbl&gt;, rain_any &lt;dbl&gt;, snow_any &lt;dbl&gt;,
-#   temp_category &lt;chr&gt;, day_type &lt;chr&gt;</code></pre>
+<pre><code>Total observations: 138</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load voter turnout data</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>voter_turnout_df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/processed-data/voter_turnout_selected_states.csv"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(state, year)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>voter_turnout_df <span class="ot">&lt;-</span> voter_turnout_df <span class="sc">%&gt;%</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Turnout level: low (below mean) vs high (above mean)</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">turnout_level =</span> <span class="fu">ifelse</span>(normalized_vep_turnout <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="st">"Low"</span>, <span class="st">"High"</span>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(voter_turnout_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Presidential elections: %d</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(weather_turnout_full<span class="sc">$</span>election_type.x <span class="sc">==</span> <span class="st">"Presidential"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 13
-   year state     state_abv total_ballots_counted    vap    vep vap_turnout_rate
-  &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;                     &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;            &lt;dbl&gt;
-1  1980 Californ… CA                      8775459 1.76e7 1.56e7            0.5  
-2  1982 Californ… CA                      8064314 1.84e7 1.62e7            0.437
-3  1984 Californ… CA                      9796375 1.93e7 1.66e7            0.508
-4  1986 Californ… CA                      7617142 2.02e7 1.72e7            0.377
-5  1988 Californ… CA                     10194539 2.12e7 1.77e7            0.480
-6  1990 Californ… CA                      7899131 2.21e7 1.81e7            0.358
-# ℹ 6 more variables: vep_turnout_rate &lt;dbl&gt;, election_type &lt;chr&gt;,
-#   mean_vep_turnout &lt;dbl&gt;, normalized_vep_turnout &lt;dbl&gt;, state_color &lt;chr&gt;,
-#   turnout_level &lt;chr&gt;</code></pre>
+<pre><code>Presidential elections: 72</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>weather_turnout <span class="ot">&lt;-</span> election_day_weather_df <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(voter_turnout_df, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"state"</span>, <span class="st">"year"</span>))</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(weather_turnout)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Midterm elections: %d</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">sum</span>(weather_turnout_full<span class="sc">$</span>election_type.x <span class="sc">==</span> <span class="st">"Midterm"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 29
-  state    state_abb  year election_type.x election_date station_id station_name
-  &lt;chr&gt;    &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;           &lt;date&gt;        &lt;chr&gt;      &lt;chr&gt;       
-1 Califor… CA         1980 Presidential    1980-11-04    USW000232… SACRAMENTO …
-2 Califor… CA         1982 Midterm         1982-11-02    USW000232… SACRAMENTO …
-3 Califor… CA         1984 Presidential    1984-11-06    USW000232… SACRAMENTO …
-4 Califor… CA         1986 Midterm         1986-11-04    USW000232… SACRAMENTO …
-5 Califor… CA         1988 Presidential    1988-11-08    USW000232… SACRAMENTO …
-6 Califor… CA         1990 Midterm         1990-11-06    USW000232… SACRAMENTO …
-# ℹ 22 more variables: latitude &lt;dbl&gt;, longitude &lt;dbl&gt;, tmax &lt;dbl&gt;, tmin &lt;dbl&gt;,
-#   prcp &lt;dbl&gt;, snow &lt;dbl&gt;, tavg &lt;dbl&gt;, rain_any &lt;dbl&gt;, snow_any &lt;dbl&gt;,
-#   temp_category &lt;chr&gt;, day_type &lt;chr&gt;, state_abv &lt;chr&gt;,
-#   total_ballots_counted &lt;dbl&gt;, vap &lt;dbl&gt;, vep &lt;dbl&gt;, vap_turnout_rate &lt;dbl&gt;,
-#   vep_turnout_rate &lt;dbl&gt;, election_type.y &lt;chr&gt;, mean_vep_turnout &lt;dbl&gt;,
-#   normalized_vep_turnout &lt;dbl&gt;, state_color &lt;chr&gt;, turnout_level &lt;chr&gt;</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(weather_turnout)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 138
-Columns: 29
-$ state                  &lt;chr&gt; "California", "California", "California", "Cali…
-$ state_abb              &lt;chr&gt; "CA", "CA", "CA", "CA", "CA", "CA", "CA", "CA",…
-$ year                   &lt;dbl&gt; 1980, 1982, 1984, 1986, 1988, 1990, 1992, 1994,…
-$ election_type.x        &lt;chr&gt; "Presidential", "Midterm", "Presidential", "Mid…
-$ election_date          &lt;date&gt; 1980-11-04, 1982-11-02, 1984-11-06, 1986-11-04…
-$ station_id             &lt;chr&gt; "USW00023271", "USW00023271", "USW00023271", "U…
-$ station_name           &lt;chr&gt; "SACRAMENTO 5 ESE, CA US", "SACRAMENTO 5 ESE, C…
-$ latitude               &lt;dbl&gt; 38.55520, 38.55520, 38.55520, 38.55520, 38.5552…
-$ longitude              &lt;dbl&gt; -121.41830, -121.41830, -121.41830, -121.41830,…
-$ tmax                   &lt;dbl&gt; 84, 72, 65, 80, 64, 68, 73, 64, 64, 69, 71, 74,…
-$ tmin                   &lt;dbl&gt; 55, 47, 51, 50, 49, 50, 55, 43, 43, 51, 46, 41,…
-$ prcp                   &lt;dbl&gt; 0.00, 0.00, 0.33, 0.00, 0.00, 0.00, 0.00, 0.00,…
-$ snow                   &lt;dbl&gt; NA, NA, NA, NA, NA, NA, 0, 0, NA, 0, 0, 0, 0, N…
-$ tavg                   &lt;dbl&gt; 69.5, 59.5, 58.0, 65.0, 56.5, 59.0, 64.0, 53.5,…
-$ rain_any               &lt;dbl&gt; 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ snow_any               &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ temp_category          &lt;chr&gt; "Hot", "Hot", "Hot", "Hot", "Hot", "Hot", "Hot"…
-$ day_type               &lt;chr&gt; "Dry", "Dry", "Wet", "Dry", "Dry", "Dry", "Dry"…
-$ state_abv              &lt;chr&gt; "CA", "CA", "CA", "CA", "CA", "CA", "CA", "CA",…
-$ total_ballots_counted  &lt;dbl&gt; 8775459, 8064314, 9796375, 7617142, 10194539, 7…
-$ vap                    &lt;dbl&gt; 17551451, 18448245, 19270739, 20222886, 2124980…
-$ vep                    &lt;dbl&gt; 15616072, 16162454, 16614618, 17157466, 1774554…
-$ vap_turnout_rate       &lt;dbl&gt; 0.5000, 0.4371, 0.5084, 0.3767, 0.4797, 0.3581,…
-$ vep_turnout_rate       &lt;dbl&gt; 0.5620, 0.4990, 0.5896, 0.4440, 0.5745, 0.4353,…
-$ election_type.y        &lt;chr&gt; "presidential", "midterm", "presidential", "mid…
-$ mean_vep_turnout       &lt;dbl&gt; 0.5931500, 0.4352636, 0.5931500, 0.4352636, 0.5…
-$ normalized_vep_turnout &lt;dbl&gt; -3.115000e-02, 6.373636e-02, -3.550000e-03, 8.7…
-$ state_color            &lt;chr&gt; "blue", "blue", "blue", "blue", "blue", "blue",…
-$ turnout_level          &lt;chr&gt; "Low", "High", "Low", "High", "Low", "High", "H…</code></pre>
+<pre><code>Midterm elections: 66</code></pre>
 </div>
 </div>
+<hr>
 </section>
-<section id="hypothesis-tests" class="level1">
-<h1>Hypothesis Tests</h1>
-<ol type="1">
-<li>Chi-Square Test of Independence: Weather Conditions and Voter Turnout Classification</li>
-<li>Research Question: Is there a significant association between weather conditions (dry vs.&nbsp;wet days) and voter turnout classification (high vs.&nbsp;low relative to expected turnout)? Hypotheses:</li>
-</ol>
-<p>H₀: Weather conditions and turnout classification are independent (weather does not influence whether turnout is above or below expected levels)</p>
-<p>H₁: Weather conditions and turnout classification are dependent (weather influences whether turnout is above or below expected levels)</p>
-<p>Method: Chi-square test of independence using a 2×2 contingency table Operationalization:</p>
-<p>day_type: Binary classification based on precipitation (dry = no precipitation, wet = any precipitation) turnout_level: Binary classification based on normalized VEP turnout (low = normalized turnout &lt; 0, high = normalized turnout ≥ 0)</p>
+<section id="presidential-elections" class="level1">
+<h1>Presidential Elections</h1>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>contingency_table <span class="ot">&lt;-</span> <span class="fu">table</span>(weather_turnout<span class="sc">$</span>day_type,         weather_turnout<span class="sc">$</span>turnout_level)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>contingency_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter for Presidential elections</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>weather_turnout_pres <span class="ot">&lt;-</span> weather_turnout_full <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(election_type.x <span class="sc">==</span> <span class="st">"Presidential"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="test-1-chi-square-test-of-independence" class="level2">
+<h2 class="anchored" data-anchor-id="test-1-chi-square-test-of-independence">Test 1: Chi-Square Test of Independence</h2>
+<p><strong>Research Question:</strong> Is there a significant association between weather conditions (dry vs.&nbsp;wet days) and voter turnout classification (high vs.&nbsp;low relative to expected turnout)?</p>
+<p><strong>Hypotheses:</strong></p>
+<ul>
+<li><strong>H₀:</strong> Weather conditions and turnout level are independent (weather does not influence whether turnout levels)</li>
+<li><strong>H₁:</strong> Weather conditions and turnout level are dependent (weather influences turnout levels)</li>
+</ul>
+<p><strong>Method:</strong> Chi-square test of independence using a 2×2 contingency table</p>
+<section id="contingency-table" class="level3">
+<h3 class="anchored" data-anchor-id="contingency-table">Contingency Table</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create contingency table</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>contingency_table_pres <span class="ot">&lt;-</span> <span class="fu">table</span>(weather_turnout_pres<span class="sc">$</span>day_type,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                                weather_turnout_pres<span class="sc">$</span>turnout_level)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Display table</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">addmargins</span>(contingency_table_pres)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     
-      High Low
-  Dry   49  41
-  Wet   22  26</code></pre>
+      High Low Sum
+  Dry   27  21  48
+  Wet   10  14  24
+  Sum   37  35  72</code></pre>
 </div>
+</div>
+<!-- ### Chi-Square Test Results -->
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>chi <span class="ot">&lt;-</span> <span class="fu">chisq.test</span>(contingency_table) </span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>chi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform chi-square test</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>chi_pres <span class="ot">&lt;-</span> <span class="fu">chisq.test</span>(contingency_table_pres)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>chi_pres</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Pearson's Chi-squared test with Yates' continuity correction
+
+data:  contingency_table_pres
+X-squared = 0.84093, df = 1, p-value = 0.3591</code></pre>
+</div>
+</div>
+<!-- ### Expected Frequencies -->
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check expected frequencies</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># chi_pres$expected</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<!-- All expected frequencies >= 5. Chi-square assumption satisfied. -->
+<!-- 
+### Proportions Analysis
+
+
+::: {.cell}
+
+```{.r .cell-code}
+# Calculate proportions (%)
+prop.table(contingency_table_pres, margin = 1) * 100
+```
+
+::: {.cell-output .cell-output-stdout}
+
+```
+     
+          High      Low
+  Dry 56.25000 43.75000
+  Wet 41.66667 58.33333
+```
+
+
+:::
+:::
+
+
+--- -->
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>✗ FAIL TO REJECT H₀ (p = 0.359132 ≥ 0.05)
+There is NO statistically significant association between weather conditions
+and voter turnout classification in Presidential elections.</code></pre>
+</div>
+</div>
+<p>There is NO statistically significant association between weather conditions and voter turnout classification in Presidential elections.</p>
+<hr>
+</section>
+</section>
+<section id="test-2-permutation-test-for-correlation" class="level2">
+<h2 class="anchored" data-anchor-id="test-2-permutation-test-for-correlation">Test 2: Permutation Test for Correlation</h2>
+<p><strong>Research Question:</strong> Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance?</p>
+<p><strong>Hypotheses:</strong></p>
+<ul>
+<li><strong>H₀:</strong> ρ = 0 (no linear correlation between temperature and voter turnout exists in the population)</li>
+<li><strong>H₁:</strong> ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)</li>
+</ul>
+<p><strong>Method:</strong> Two-tailed permutation test for Pearson correlation coefficient</p>
+<section id="descriptive-statistics" class="level3">
+<h3 class="anchored" data-anchor-id="descriptive-statistics">Descriptive Statistics</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>desc_stats_pres <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variable =</span> <span class="fu">c</span>(<span class="st">"Temperature (°F)"</span>, <span class="st">"VEP Turnout Rate"</span>),</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean =</span> <span class="fu">c</span>(<span class="fu">mean</span>(weather_turnout_pres<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(weather_turnout_pres<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">SD =</span> <span class="fu">c</span>(<span class="fu">sd</span>(weather_turnout_pres<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>         <span class="fu">sd</span>(weather_turnout_pres<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Min =</span> <span class="fu">c</span>(<span class="fu">min</span>(weather_turnout_pres<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">min</span>(weather_turnout_pres<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Max =</span> <span class="fu">c</span>(<span class="fu">max</span>(weather_turnout_pres<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">max</span>(weather_turnout_pres<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>desc_stats_pres <span class="sc">%&gt;%</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Descriptive Statistics: Presidential Elections"</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">digits =</span> <span class="dv">4</span>,</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Mean"</span>, <span class="st">"SD"</span>, <span class="st">"Min"</span>, <span class="st">"Max"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover table-condensed caption-top table-sm small" data-quarto-postprocess="true">
+<caption>Descriptive Statistics: Presidential Elections</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Variable</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">SD</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Min</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Temperature (°F)</td>
+<td style="text-align: right;">52.3542</td>
+<td style="text-align: right;">11.6285</td>
+<td style="text-align: right;">30.0000</td>
+<td style="text-align: right;">79.0000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VEP Turnout Rate</td>
+<td style="text-align: right;">0.6070</td>
+<td style="text-align: right;">0.0555</td>
+<td style="text-align: right;">0.4901</td>
+<td style="text-align: right;">0.7464</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="permutation-test" class="level3">
+<h3 class="anchored" data-anchor-id="permutation-test">Permutation Test</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5100</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>n_permutations <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate observed correlation</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>observed_cor_pres <span class="ot">&lt;-</span> <span class="fu">cor</span>(weather_turnout_pres<span class="sc">$</span>tavg, </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                         weather_turnout_pres<span class="sc">$</span>vep_turnout_rate,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                         <span class="at">use =</span> <span class="st">"complete.obs"</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Run permutations</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>permuted_cors_pres <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n_permutations)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_permutations) { </span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  shuffled_turnout <span class="ot">&lt;-</span> <span class="fu">sample</span>(weather_turnout_pres<span class="sc">$</span>vep_turnout_rate)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  permuted_cors_pres[i] <span class="ot">&lt;-</span> <span class="fu">cor</span>(weather_turnout_pres<span class="sc">$</span>tavg, </span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>                               shuffled_turnout,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>                               <span class="at">use =</span> <span class="st">"complete.obs"</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate p-value (two-tailed)</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>p_value_pres <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(permuted_cors_pres) <span class="sc">&gt;=</span> <span class="fu">abs</span>(observed_cor_pres))</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate R²</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>r_squared_pres <span class="ot">&lt;-</span> observed_cor_pres<span class="sc">^</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="results" class="level3">
+<h3 class="anchored" data-anchor-id="results">Results</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>perm_results_pres <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Statistic =</span> <span class="fu">c</span>(<span class="st">"Observed correlation (r)"</span>,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Permutation p-value"</span>,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"R² (variance explained)"</span>,</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Number of permutations"</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Significance"</span>),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, observed_cor_pres),</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, p_value_pres),</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.4f (%.2f%%)"</span>, r_squared_pres, r_squared_pres <span class="sc">*</span> <span class="dv">100</span>),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%d"</span>, n_permutations),</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(p_value_pres <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Yes (p &lt; 0.05)"</span>, <span class="st">"No (p ≥ 0.05)"</span>)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>perm_results_pres <span class="sc">%&gt;%</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Permutation Test Results: Presidential Elections"</span>,</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">align =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"r"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">5</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-hover table-condensed caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Permutation Test Results: Presidential Elections</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Observed correlation (r)</td>
+<td style="text-align: right;">0.092328</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Permutation p-value</td>
+<td style="text-align: right;">0.449700</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">R² (variance explained)</td>
+<td style="text-align: right;">0.0085 (0.85%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of permutations</td>
+<td style="text-align: right;">10000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-weight: bold;">Significance</td>
+<td style="text-align: right; font-weight: bold;">No (p ≥ 0.05)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="permutation-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="permutation-distribution">Permutation Distribution</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">correlation =</span> permuted_cors_pres) <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> correlation)) <span class="sc">+</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">50</span>, <span class="at">fill =</span> <span class="st">"grey"</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> observed_cor_pres, <span class="at">color =</span> <span class="st">"red"</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">size =</span> <span class="fl">1.0</span>) <span class="sc">+</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="sc">-</span>observed_cor_pres, <span class="at">color =</span> <span class="st">"red"</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">size =</span> <span class="fl">1.0</span>) <span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   annotate("text", x = observed_cor_pres, y = Inf,</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">#            label = sprintf("Observed r = %.4f", observed_cor_pres),</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co">#            hjust = -0.1, vjust = 2, color = "red", fontface = "bold") +</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Permutation Distribution: Presidential Elections"</span>,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="fu">sprintf</span>(<span class="st">"p-value = %.4f"</span>, p_value_pres),</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Correlation Coefficient"</span>,</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">14</span>),</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="weather_turnout_testing_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation">Interpretation</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+**Statistical Conclusion:**</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✗ FAIL TO REJECT H₀ (p = 0.449700 ≥ 0.05)</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+**Effect Size:** r = 0.092328 indicates a </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>negligible</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code> correlation.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Temperature explains 0.85% of the variance in turnout.</code></pre>
+</div>
+</div>
+<p>There is NO statistically significant correlation between temperature and voter turnout in Presidential elections. Negligible Correlation</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="midterm-elections" class="level1">
+<h1>Midterm Elections</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter for Midterm elections</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>weather_turnout <span class="ot">&lt;-</span> weather_turnout_full <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(election_type.x <span class="sc">==</span> <span class="st">"Midterm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="test-1-chi-square-test-of-independence-1" class="level2">
+<h2 class="anchored" data-anchor-id="test-1-chi-square-test-of-independence-1">Test 1: Chi-Square Test of Independence</h2>
+<p><strong>Research Question:</strong> Is there a significant association between weather conditions (dry vs.&nbsp;wet days) and voter turnout classification (high vs.&nbsp;low relative to expected turnout)?</p>
+<p><strong>Hypotheses:</strong></p>
+<ul>
+<li><strong>H₀:</strong> Weather conditions and turnout classification are independent (weather does not influence whether turnout is above or below expected levels)</li>
+<li><strong>H₁:</strong> Weather conditions and turnout classification are dependent (weather influences whether turnout is above or below expected levels)</li>
+</ul>
+<p><strong>Method:</strong> Chi-square test of independence using a 2×2 contingency table</p>
+<section id="contingency-table-1" class="level3">
+<h3 class="anchored" data-anchor-id="contingency-table-1">Contingency Table</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create contingency table</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>contingency_table <span class="ot">&lt;-</span> <span class="fu">table</span>(weather_turnout<span class="sc">$</span>day_type,</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                          weather_turnout<span class="sc">$</span>turnout_level)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Display table</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="fu">addmargins</span>(contingency_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>     
+      High Low Sum
+  Dry   22  20  42
+  Wet   12  12  24
+  Sum   34  32  66</code></pre>
+</div>
+</div>
+</section>
+<section id="chi-square-test-results" class="level3">
+<h3 class="anchored" data-anchor-id="chi-square-test-results">Chi-Square Test Results</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform chi-square test</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>chi <span class="ot">&lt;-</span> <span class="fu">chisq.test</span>(contingency_table)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>chi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Pearson's Chi-squared test with Yates' continuity correction
 
 data:  contingency_table
-X-squared = 0.61652, df = 1, p-value = 0.4323</code></pre>
+X-squared = 0, df = 1, p-value = 1</code></pre>
 </div>
+</div>
+</section>
+<section id="expected-frequencies" class="level3">
+<h3 class="anchored" data-anchor-id="expected-frequencies">Expected Frequencies</h3>
+<div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>chi<span class="sc">$</span>expected</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check expected frequencies</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>chi<span class="sc">$</span>expected</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>     
           High      Low
-  Dry 46.30435 43.69565
-  Wet 24.69565 23.30435</code></pre>
+  Dry 21.63636 20.36364
+  Wet 12.36364 11.63636</code></pre>
 </div>
 </div>
-<p>All expected frequencies &gt;= 5. Chi-square assumption satisfied.</p>
+<p>✓ Minimum expected frequency</p>
+</section>
+<section id="proportions-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="proportions-analysis">Proportions Analysis</h3>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>contingency_df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(contingency_table)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(contingency_df) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Day_Type"</span>, <span class="st">"Turnout_Level"</span>, <span class="st">"Count"</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>contingency_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate proportions (%)</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(contingency_table, <span class="at">margin =</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="dv">100</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Day_Type Turnout_Level Count
-1      Dry          High    49
-2      Wet          High    22
-3      Dry           Low    41
-4      Wet           Low    26</code></pre>
+<pre><code>     
+          High      Low
+  Dry 52.38095 47.61905
+  Wet 50.00000 50.00000</code></pre>
 </div>
 </div>
-<p>p.value(0.4323) &gt; 0.05. The Chi-Square test does NOT show a statistically significant association between day type and turnout level. We fail to reject the null hypothesis.</p>
-<p>This suggests that precipitation on Election Day is independent of whether turnout is high or low.</p>
-<ol start="2" type="1">
-<li>Permutation Test: Temperature and Voter Turnout Correlation Research Question: Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance? Hypotheses:</li>
-</ol>
-<p>H₀: ρ = 0 (no linear correlation between temperature and voter turnout exists in the population) H₁: ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)</p>
-<p>Method: Two-tailed permutation test for Pearson correlation coefficient Rationale: Permutation testing accounts for potential non-normality in the data and provides an exact significance test without parametric assumptions.</p>
+</section>
+<section id="interpretation-1" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-1">Interpretation</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+**Statistical Conclusion:**</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✗ FAIL TO REJECT H₀ (p = 1.000000 ≥ 0.05)
+There is NO statistically significant association between weather conditions
+and voter turnout classification in Midterm elections.</code></pre>
+</div>
+</div>
+<p>There IS a statistically significant association between weather conditions and voter turnout classification in Midterm elections</p>
+<hr>
+</section>
+</section>
+<section id="test-2-permutation-test-for-correlation-1" class="level2">
+<h2 class="anchored" data-anchor-id="test-2-permutation-test-for-correlation-1">Test 2: Permutation Test for Correlation</h2>
+<p><strong>Research Question:</strong> Does temperature exhibit a statistically significant linear relationship with voter turnout, beyond what would be expected by random chance?</p>
+<p><strong>Hypotheses:</strong></p>
+<ul>
+<li><strong>H₀:</strong> ρ = 0 (no linear correlation between temperature and voter turnout exists in the population)</li>
+<li><strong>H₁:</strong> ρ ≠ 0 (a non-zero linear correlation exists between temperature and voter turnout in the population)</li>
+</ul>
+<p><strong>Method:</strong> Two-tailed permutation test for Pearson correlation coefficient</p>
+<section id="descriptive-statistics-1" class="level3">
+<h3 class="anchored" data-anchor-id="descriptive-statistics-1">Descriptive Statistics</h3>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5100</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>n_permutations <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>observed_cor <span class="ot">&lt;-</span> <span class="fu">cor</span>(weather_turnout<span class="sc">$</span>tavg, weather_turnout<span class="sc">$</span>vep_turnout_rate)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>permuted_cors <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n_permutations)</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Run 10,000 permutations</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_permutations) { </span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    shuffled_turnout <span class="ot">&lt;-</span> <span class="fu">sample</span>(weather_turnout<span class="sc">$</span>vep_turnout_rate)</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    permuted_cors[i] <span class="ot">&lt;-</span> <span class="fu">cor</span>(weather_turnout<span class="sc">$</span>tavg, shuffled_turnout,</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">use =</span> <span class="st">"complete.obs"</span>)</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="co">#Calculate p-value (two-tailed)</span></span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>p_value <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(permuted_cors) <span class="sc">&gt;=</span> <span class="fu">abs</span>(observed_cor))</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>p_value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>desc_stats <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Variable =</span> <span class="fu">c</span>(<span class="st">"Temperature (°F)"</span>, <span class="st">"VEP Turnout Rate"</span>),</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Mean =</span> <span class="fu">c</span>(<span class="fu">mean</span>(weather_turnout<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">mean</span>(weather_turnout<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">SD =</span> <span class="fu">c</span>(<span class="fu">sd</span>(weather_turnout<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>         <span class="fu">sd</span>(weather_turnout<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Min =</span> <span class="fu">c</span>(<span class="fu">min</span>(weather_turnout<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">min</span>(weather_turnout<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Max =</span> <span class="fu">c</span>(<span class="fu">max</span>(weather_turnout<span class="sc">$</span>tavg, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>          <span class="fu">max</span>(weather_turnout<span class="sc">$</span>vep_turnout_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>desc_stats <span class="sc">%&gt;%</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Descriptive Statistics: Midterm Elections"</span>,</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">digits =</span> <span class="dv">4</span>,</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Variable"</span>, <span class="st">"Mean"</span>, <span class="st">"SD"</span>, <span class="st">"Min"</span>, <span class="st">"Max"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover table-condensed caption-top table-sm small" data-quarto-postprocess="true">
+<caption>Descriptive Statistics: Midterm Elections</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Variable</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">SD</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Min</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Temperature (°F)</td>
+<td style="text-align: right;">51.6515</td>
+<td style="text-align: right;">11.7588</td>
+<td style="text-align: right;">31.0000</td>
+<td style="text-align: right;">76.0000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VEP Turnout Rate</td>
+<td style="text-align: right;">0.4326</td>
+<td style="text-align: right;">0.0617</td>
+<td style="text-align: right;">0.2913</td>
+<td style="text-align: right;">0.5913</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="permutation-test-1" class="level3">
+<h3 class="anchored" data-anchor-id="permutation-test-1">Permutation Test</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5100</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>n_permutations <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate observed correlation</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>observed_cor <span class="ot">&lt;-</span> <span class="fu">cor</span>(weather_turnout<span class="sc">$</span>tavg, </span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>                   weather_turnout<span class="sc">$</span>vep_turnout_rate,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">use =</span> <span class="st">"complete.obs"</span>)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Run permutations</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>permuted_cors <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n_permutations)</span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_permutations) { </span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>  shuffled_turnout <span class="ot">&lt;-</span> <span class="fu">sample</span>(weather_turnout<span class="sc">$</span>vep_turnout_rate)</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  permuted_cors[i] <span class="ot">&lt;-</span> <span class="fu">cor</span>(weather_turnout<span class="sc">$</span>tavg, </span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>                         shuffled_turnout,</span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>                         <span class="at">use =</span> <span class="st">"complete.obs"</span>)</span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb37-18"><a href="#cb37-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-19"><a href="#cb37-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate p-value (two-tailed)</span></span>
+<span id="cb37-20"><a href="#cb37-20" aria-hidden="true" tabindex="-1"></a>p_value <span class="ot">&lt;-</span> <span class="fu">mean</span>(<span class="fu">abs</span>(permuted_cors) <span class="sc">&gt;=</span> <span class="fu">abs</span>(observed_cor))</span>
+<span id="cb37-21"><a href="#cb37-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-22"><a href="#cb37-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate R²</span></span>
+<span id="cb37-23"><a href="#cb37-23" aria-hidden="true" tabindex="-1"></a>r_squared <span class="ot">&lt;-</span> observed_cor<span class="sc">^</span><span class="dv">2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="permutation-test-results" class="level3">
+<h3 class="anchored" data-anchor-id="permutation-test-results">Permutation Test Results</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>perm_results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Statistic =</span> <span class="fu">c</span>(<span class="st">"Observed correlation (r)"</span>, </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Permutation p-value"</span>,</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>                <span class="st">"R² (variance explained)"</span>,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Number of permutations"</span>,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Significance"</span>),</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Value =</span> <span class="fu">c</span>(</span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, observed_cor),</span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.6f"</span>, p_value),</span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%.4f (%.2f%%)"</span>, r_squared, r_squared <span class="sc">*</span> <span class="dv">100</span>),</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"%d"</span>, n_permutations),</span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(p_value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Yes (p &lt; 0.05)"</span>, <span class="st">"No (p ≥ 0.05)"</span>)</span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-16"><a href="#cb38-16" aria-hidden="true" tabindex="-1"></a>perm_results <span class="sc">%&gt;%</span></span>
+<span id="cb38-17"><a href="#cb38-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Permutation Test Results: Midterm Elections"</span>,</span>
+<span id="cb38-18"><a href="#cb38-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">align =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"r"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">5</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-hover table-condensed caption-top table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Permutation Test Results: Midterm Elections</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Observed correlation (r)</td>
+<td style="text-align: right;">0.068752</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Permutation p-value</td>
+<td style="text-align: right;">0.587800</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">R² (variance explained)</td>
+<td style="text-align: right;">0.0047 (0.47%)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of permutations</td>
+<td style="text-align: right;">10000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left; font-weight: bold;">Significance</td>
+<td style="text-align: right; font-weight: bold;">No (p ≥ 0.05)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="permutation-distribution-1" class="level3">
+<h3 class="anchored" data-anchor-id="permutation-distribution-1">Permutation Distribution</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">correlation =</span> permuted_cors) <span class="sc">%&gt;%</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> correlation)) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">50</span>, <span class="at">fill =</span> <span class="st">"grey"</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> observed_cor, <span class="at">color =</span> <span class="st">"red"</span>, </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">size =</span> <span class="fl">1.0</span>) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="sc">-</span>observed_cor, <span class="at">color =</span> <span class="st">"red"</span>, </span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">size =</span> <span class="fl">1.0</span>) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Permutation Distribution: Midterm Elections"</span>,</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="fu">sprintf</span>(<span class="st">"p-value = %.4f"</span>, p_value),</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Correlation Coefficient"</span>,</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">14</span>),</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="weather_turnout_testing_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="interpretation-2" class="level3">
+<h3 class="anchored" data-anchor-id="interpretation-2">Interpretation</h3>
+<div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.4267</code></pre>
+<pre><code>
+**Statistical Conclusion:**</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>✗ FAIL TO REJECT H₀ (p = 0.587800 ≥ 0.05)
+There is NO statistically significant correlation between temperature
+and voter turnout in Midterm elections.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+**Effect Size:** r = 0.068752 indicates a </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>negligible</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code> correlation.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Temperature explains 0.47% of the variance in turnout.</code></pre>
 </div>
 </div>
-<p>The permutation test does NOT show statistical significance (p ≥ 0.05). We fail to reject the null hypothesis. The observed correlation of 0.070 could plausibly occur by chance. This suggests that the relationship between temperature and turnout may not be meaningful.</p>
+<p>There IS a statistically significant correlation between temperature and voter turnout in Midterm elections.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="comparative-summary" class="level1">
+<h1>Comparative Summary</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create comparison table for Chi-Square tests</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>chi_comparison <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Election Type</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Presidential"</span>, <span class="st">"Midterm"</span>),</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">χ² Statistic</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(chi_pres<span class="sc">$</span>statistic, chi<span class="sc">$</span>statistic),</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">p-value</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(chi_pres<span class="sc">$</span>p.value, chi<span class="sc">$</span>p.value),</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Significant?</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(chi_pres<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span>),</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(chi<span class="sc">$</span>p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span>)</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>chi_comparison <span class="sc">%&gt;%</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Chi-Square Test Comparison: Presidential vs. Midterm Elections"</span>,</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">digits =</span> <span class="dv">6</span>,</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">align =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>, <span class="st">"c"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover table-condensed caption-top table-sm small" data-quarto-postprocess="true">
+<caption>Chi-Square Test Comparison: Presidential vs. Midterm Elections</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Election Type</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">χ² Statistic</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p-value</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Significant?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Presidential</td>
+<td style="text-align: right;">0.840927</td>
+<td style="text-align: right;">0.359132</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Midterm</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: center;">No</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create comparison table for Permutation tests</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>perm_comparison <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Election Type</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"Presidential"</span>, <span class="st">"Midterm"</span>),</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Correlation (r)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(observed_cor_pres, observed_cor),</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">p-value</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(p_value_pres, p_value),</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">R²</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(r_squared_pres, r_squared),</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Significant?</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(p_value_pres <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span>),</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(p_value <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span>)</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>perm_comparison <span class="sc">%&gt;%</span></span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Permutation Test Comparison: Presidential vs. Midterm Elections"</span>,</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">digits =</span> <span class="dv">6</span>,</span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">align =</span> <span class="fu">c</span>(<span class="st">"l"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>, <span class="st">"r"</span>, <span class="st">"c"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>, <span class="st">"condensed"</span>),</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>                <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-hover table-condensed caption-top table-sm small" data-quarto-postprocess="true">
+<caption>Permutation Test Comparison: Presidential vs. Midterm Elections</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Election Type</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Correlation (r)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">p-value</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">R²</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Significant?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Presidential</td>
+<td style="text-align: right;">0.092328</td>
+<td style="text-align: right;">0.4497</td>
+<td style="text-align: right;">0.008524</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Midterm</td>
+<td style="text-align: right;">0.068752</td>
+<td style="text-align: right;">0.5878</td>
+<td style="text-align: right;">0.004727</td>
+<td style="text-align: center;">No</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="key-findings" class="level2">
+<h2 class="anchored" data-anchor-id="key-findings">Key Findings</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+**Summary of Hypothesis Tests:**</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>1. Chi-Square Test (Weather × Turnout Classification):</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   - Presidential: χ² = 0.8409, p = 0.359132 → Not Significant</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   - Midterm: χ² = 0.0000, p = 1.000000 → Not Significant</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2. Permutation Test (Temperature × Turnout Correlation):</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   - Presidential: r = 0.092328, p = 0.449700 → Not Significant</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   - Midterm: r = 0.068752, p = 0.587800 → Not Significant</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>**Overall Conclusion:**</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Neither weather conditions nor temperature show statistically significant</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>associations with voter turnout in either Presidential or Midterm elections.</code></pre>
+</div>
+</div>
+</section>
 </section>
 
 </main>
