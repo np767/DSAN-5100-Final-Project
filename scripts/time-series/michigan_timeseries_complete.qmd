@@ -1,0 +1,183 @@
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(forecast)
+library(tseries)
+library(astsa)
+library(plotly)
+library(here)
+
+options(scipen = 999)
+```
+```{r load-data}
+unemployment_df <- read_csv(here("data", "processed-data", "unemployment_df.csv"))
+
+mi_data <- unemployment_df %>%
+  select(year, Michigan) %>%
+  rename(unemployment_rate = Michigan) %>%
+  arrange(year)
+
+head(mi_data)
+tail(mi_data)
+summary(mi_data)
+```
+```{r eda-static}
+ggplot(mi_data, aes(x = year, y = unemployment_rate)) +
+  geom_line(color = "steelblue", size = 1) +
+  geom_point(color = "steelblue", size = 2) +
+  labs(title = "Michigan Unemployment Rate (1976-2024)",
+       x = "Year", y = "Unemployment Rate (%)") +
+  theme_minimal()
+```
+```{r eda-plotly}
+plot_ly(mi_data, x = ~year, y = ~unemployment_rate, 
+        type = 'scatter', mode = 'lines+markers',
+        line = list(color = 'steelblue', width = 2),
+        marker = list(size = 6, color = 'steelblue')) %>%
+  add_segments(x = 1982, xend = 1982, y = 0, yend = 15,
+               line = list(color = "red", dash = "dash"),
+               showlegend = FALSE) %>%
+  add_segments(x = 1990, xend = 1990, y = 0, yend = 15,
+               line = list(color = "red", dash = "dash"),
+               showlegend = FALSE) %>%
+  add_segments(x = 2008, xend = 2008, y = 0, yend = 15,
+               line = list(color = "red", dash = "dash"),
+               showlegend = FALSE) %>%
+  add_segments(x = 2020, xend = 2020, y = 0, yend = 15,
+               line = list(color = "red", dash = "dash"),
+               showlegend = FALSE) %>%
+  layout(title = "Michigan Unemployment with Economic Events",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Unemployment Rate (%)"))
+```
+```{r create-ts}
+mi_ts <- ts(mi_data$unemployment_rate, start = 1976, frequency = 1)
+```
+```{r decomposition}
+decomp_attempt <- tryCatch({
+  decompose(mi_ts, type = "additive")
+}, error = function(e) {
+  return(NULL)
+})
+
+if(is.null(decomp_attempt)) {
+  message("Classical decomposition requires frequency > 1. With annual data (frequency=1), decomposition is not applicable. The series shows trend and irregular components but no seasonal pattern.")
+} else {
+  plot(decomp_attempt)
+}
+```
+```{r lag-plots}
+lag.plot(mi_ts, lags = 4, do.lines = FALSE,
+         main = "Lag Plots: Michigan Unemployment")
+```
+```{r acf-plot}
+acf(mi_ts, main = "ACF: Michigan Unemployment Rate", lag.max = 20)
+```
+```{r adf-test}
+adf_result <- adf.test(mi_ts)
+adf_result
+```
+```{r log-transform-check}
+plot(mi_ts, main = "Original Series", ylab = "Unemployment Rate (%)")
+sd_original <- sd(mi_ts)
+
+mi_ts_log <- log(mi_ts)
+plot(mi_ts_log, main = "Log-Transformed Series", ylab = "Log(Unemployment)")
+sd_log <- sd(mi_ts_log)
+```
+```{r differencing}
+mi_diff <- diff(mi_ts, differences = 1)
+
+par(mfrow = c(2, 1))
+plot(mi_ts, main = "Original Series", ylab = "Unemployment Rate (%)")
+plot(mi_diff, main = "Differenced Series (d=1)", ylab = "Change")
+```
+```{r adf-diff}
+adf_diff <- adf.test(mi_diff)
+adf_diff
+```
+```{r acf-diff}
+acf(mi_diff, main = "ACF: Differenced Series", lag.max = 20)
+```
+```{r acf-pacf}
+par(mfrow = c(1, 2))
+acf(mi_diff, main = "ACF: Differenced", lag.max = 20)
+pacf(mi_diff, main = "PACF: Differenced", lag.max = 20)
+```
+```{r manual-models}
+model1 <- Arima(mi_ts, order = c(0, 1, 1))
+model2 <- Arima(mi_ts, order = c(1, 1, 0))
+model3 <- Arima(mi_ts, order = c(1, 1, 1))
+model4 <- Arima(mi_ts, order = c(2, 1, 0))
+
+comparison <- data.frame(
+  Model = c("ARIMA(0,1,1)", "ARIMA(1,1,0)", "ARIMA(1,1,1)", "ARIMA(2,1,0)"),
+  AIC = c(AIC(model1), AIC(model2), AIC(model3), AIC(model4)),
+  BIC = c(BIC(model1), BIC(model2), BIC(model3), BIC(model4))
+)
+
+knitr::kable(comparison, caption = "Manual Model Comparison")
+```
+```{r auto-arima}
+auto_model <- auto.arima(mi_ts, seasonal = FALSE)
+summary(auto_model)
+```
+```{r diagnostics-manual}
+sarima(mi_ts, p=0, d=1, q=1)
+```
+```{r diagnostics-auto}
+# Use whatever auto.arima selected - check the output above first
+auto_order <- arimaorder(auto_model)
+sarima(mi_ts, p=auto_order[1], d=auto_order[2], q=auto_order[3])
+```
+```{r benchmark-comparison}
+train <- window(mi_ts, end = 2020)
+test <- window(mi_ts, start = 2021)
+
+arima_fit <- auto.arima(train, seasonal = FALSE)
+naive_fit <- naive(train, h = length(test))
+mean_fit <- meanf(train, h = length(test))
+
+arima_forecast <- forecast(arima_fit, h = length(test))
+
+arima_mae <- mean(abs(test - arima_forecast$mean))
+naive_mae <- mean(abs(test - naive_fit$mean))
+mean_mae <- mean(abs(test - mean_fit$mean))
+
+arima_mse <- mean((test - arima_forecast$mean)^2)
+naive_mse <- mean((test - naive_fit$mean)^2)
+mean_mse <- mean((test - mean_fit$mean)^2)
+
+benchmark_comparison <- data.frame(
+  Model = c("ARIMA", "Naive", "Mean"),
+  MAE = c(arima_mae, naive_mae, mean_mae),
+  MSE = c(arima_mse, naive_mse, mean_mse)
+)
+
+knitr::kable(benchmark_comparison, caption = "Benchmark Comparison", digits = 3)
+```
+```{r final-forecast}
+final_model <- auto.arima(mi_ts, seasonal = FALSE)
+forecast_vals <- forecast(final_model, h = 2)
+forecast_vals
+```
+```{r forecast-plot}
+forecast_df <- data.frame(
+  year = c(time(mi_ts), 2025, 2026),
+  actual = c(as.numeric(mi_ts), rep(NA, 2)),
+  forecast = c(rep(NA, length(mi_ts)), as.numeric(forecast_vals$mean)),
+  lower = c(rep(NA, length(mi_ts)), as.numeric(forecast_vals$lower[,2])),
+  upper = c(rep(NA, length(mi_ts)), as.numeric(forecast_vals$upper[,2]))
+)
+
+plot_ly(forecast_df) %>%
+  add_lines(x = ~year, y = ~actual, name = "Historical",
+            line = list(color = "steelblue", width = 2)) %>%
+  add_lines(x = ~year, y = ~forecast, name = "Forecast",
+            line = list(color = "red", dash = "dash", width = 2)) %>%
+  add_ribbons(x = ~year, ymin = ~lower, ymax = ~upper,
+              name = "95% CI", fillcolor = "rgba(255,0,0,0.2)",
+              line = list(color = "transparent")) %>%
+  layout(title = "Michigan Unemployment: Historical and Forecasted",
+         xaxis = list(title = "Year"),
+         yaxis = list(title = "Unemployment Rate (%)"))
+```
