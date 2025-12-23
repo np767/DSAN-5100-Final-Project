@@ -1,0 +1,102 @@
+Load all relevant packages
+```{r}
+library(dplyr)
+library(purrr)
+library(lubridate)
+```
+
+Load in all relevant economic data
+
+```{r}
+sp500 <- read.csv("data/sp500_1928_2025.csv")
+unemployment <- read.csv("data/unemployment_1948_2025.csv")
+cpi <- read.csv("data/cpi_1968_2025.csv")
+income <- read.csv("data/median_income_1984_2024.csv")
+housing <- read.csv("data/median_housing_price_1963_2025.csv")
+```
+
+Clean s&p500 data (only keep date and closing price)
+
+```{r}
+head(sp500)
+sp500_filtered <- sp500[, c("date", "GSPC.Close")]
+head(sp500_filtered)
+
+sp500_filtered <- sp500_filtered %>% rename("Observation Date" = "date", "Closing Price (USD)" = "GSPC.Close")
+head(sp500_filtered)
+```
+
+Rename remaining data frames
+
+```{r}
+unemployment <- unemployment %>% rename("Observation Date" = "observation_date", "Unemployment Rate (%)" = "UNRATE")
+cpi <- cpi %>% rename("Observation Date" = "observation_date", "CPI" = "CORESTICKM159SFRBATL")
+income <- income %>% rename("Observation Date" = "observation_date", "Median Household Income (USD)" = "MEHOINUSA672N")
+housing <- housing %>% rename("Observation Date" = "observation_date", "Median Housing Price (USD)" = "MSPUS")
+```
+
+Change "Observation Date" to date time format
+
+```{r}
+sp500_filtered$`Observation Date` <- as.Date(sp500_filtered$`Observation Date`)
+unemployment$`Observation Date` <- as.Date(unemployment$`Observation Date`)
+cpi$`Observation Date` <- as.Date(cpi$`Observation Date`)
+income$`Observation Date` <- as.Date(income$`Observation Date`)
+housing$`Observation Date` <- as.Date(housing$`Observation Date`)
+```
+
+
+Verify column names and types are appropriate
+
+```{r}
+head(sp500_filtered)
+head(unemployment)
+head(cpi)
+head(income)
+head(housing)
+```
+
+Join all 5 cleaned dataframes into one economic dataframe
+
+```{r}
+dfs <- list(sp500_filtered, unemployment, cpi, income, housing)
+joined_econ_df <- reduce(dfs, full_join, by = "Observation Date")
+head(joined_econ_df)
+```
+
+Save joined dataframe to csv for further cleaning and analysis
+
+```{r}
+write.csv(joined_econ_df, "data/joined_econ_df.csv")
+```
+
+Further cleaning on joined dataframe. 
+
+```{r}
+econ_data <- read.csv('data/joined_econ_df.csv')
+econ_data$Observation.Date <- as.Date(econ_data$Observation.Date)
+class(econ_data$Observation.Date)
+```
+
+Aggregate dates by month (yyyy-mm) rather than by day (yyyy-mm-dd)
+
+```{r}
+econ_monthly <- econ_data %>%
+  mutate(year_month = floor_date(Observation.Date, "month")) %>%
+  group_by(year_month) %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+
+econ_monthly
+```
+
+```{r}
+econ_monthly_final <- subset(econ_monthly, select = -X)
+econ_monthly_final
+
+```
+
+Now it's fully cleaned! Write to data/processed folder
+
+```{r}
+write.csv(econ_monthly_final, "data/processed-data/final_econ_df.csv")
+```

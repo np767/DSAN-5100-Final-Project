@@ -79,8 +79,17 @@ weather_turnout_pres <- weather_turnout_full %>%
 contingency_table_pres <- table(weather_turnout_pres$day_type,
                                 weather_turnout_pres$turnout_level)
 
-# Display table
-addmargins(contingency_table_pres)
+# Display table with kable formatting
+contingency_table_pres %>%
+  addmargins() %>%
+  kable(caption = "Contingency Table: Weather Conditions × Turnout Level (Presidential Elections)",
+        col.names = c("High", "Low", "Total"),
+        align = c("r", "r", "r"),
+        booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1, bold = TRUE)
 ```
 
 <!-- ### Chi-Square Test Results -->
@@ -91,14 +100,22 @@ chi_pres <- chisq.test(contingency_table_pres)
 chi_pres
 ```
 
-<!-- ### Expected Frequencies -->
+### Expected Frequencies
 
 ```{r}
 # Check expected frequencies
-# chi_pres$expected
+chi_pres$expected %>%
+  kable(caption = "Expected Frequencies (Presidential Elections)",
+        digits = 2,
+        col.names = c("High", "Low"),
+        align = c("r", "r"),
+        booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1, bold = TRUE) %>%
+  footnote(general = "All expected frequencies ≥ 5. Chi-square assumption satisfied.")
 ```
-
-<!-- All expected frequencies >= 5. Chi-square assumption satisfied. -->
 
 <!-- 
 ### Proportions Analysis
@@ -300,8 +317,17 @@ weather_turnout <- weather_turnout_full %>%
 contingency_table <- table(weather_turnout$day_type,
                           weather_turnout$turnout_level)
 
-# Display table
-addmargins(contingency_table)
+# Display table with kable formatting
+contingency_table %>%
+  addmargins() %>%
+  kable(caption = "Contingency Table: Weather Conditions × Turnout Level (Midterm Elections)",
+        col.names = c("High", "Low", "Total"),
+        align = c("r", "r", "r"),
+        booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1, bold = TRUE)
 ```
 
 ### Chi-Square Test Results
@@ -316,9 +342,18 @@ chi
 
 ```{r}
 # Check expected frequencies
-chi$expected
+chi$expected %>%
+  kable(caption = "Expected Frequencies (Midterm Elections)",
+        digits = 2,
+        col.names = c("High", "Low"),
+        align = c("r", "r"),
+        booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1, bold = TRUE) %>%
+  footnote(general = "All expected frequencies ≥ 5. Chi-square assumption satisfied.")
 ```
-✓ Minimum expected frequency
 
 
 ### Proportions Analysis
@@ -342,7 +377,7 @@ if (chi$p.value < 0.05) {
 }
 ```
 
-There IS a statistically significant association between weather conditions and voter turnout classification in Midterm elections
+There is NO statistically significant association between weather conditions and voter turnout classification in Midterm elections.
 
 ---
 
@@ -555,6 +590,8 @@ cat(sprintf("   - Midterm: r = %.6f, p = %.6f → %s\n\n",
             ifelse(p_value < 0.05, "Significant", "Not Significant")))
 
 cat("**Overall Conclusion:**\n")
-cat("Neither weather conditions nor temperature show statistically significant\n")
-cat("associations with voter turnout in either Presidential or Midterm elections.\n")
+cat("Weather conditions (dry vs. wet) show NO statistically significant association\n")
+cat("with turnout in either election type. However, temperature shows a statistically\n")
+cat("significant positive correlation with Midterm turnout (r = 0.328, p = 0.002),\n")
+cat("but no correlation with Presidential turnout.\n")
 ```

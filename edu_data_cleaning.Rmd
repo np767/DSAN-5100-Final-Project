@@ -1,0 +1,68 @@
+# Cleaning edu_data
+
+## parsing edu_data
+
+```{r}
+library(readxl)
+library(dplyr)
+library(janitor)
+library(readr)
+
+
+edu_data <- read_excel("data/edu_data.xlsx")
+
+
+
+edu_data[3, 1] <- "25 Years and Over, Both Sexes"
+edu_data[3, 3] <- "Elementary_0_4"
+edu_data[3, 4] <- "Elementary_5_8"
+edu_data[3, 5] <- "High_1_3"
+edu_data[3, 6] <- "High_4"
+edu_data[3, 7] <- "College_1_3"
+edu_data[3, 8] <- "College_4"
+edu_data[3, 9] <- "Median"
+
+
+
+# Remove unnecessary rows
+edu_data <- edu_data[-c(1, 2, 4, 5, 6), ]
+
+
+
+
+# Define chunk parameters
+chunk_size <- 70
+total_rows <- nrow(edu_data)
+num_chunks <- ceiling(total_rows / chunk_size)
+
+
+
+
+
+# cut and reform data
+for (i in 0:(num_chunks - 1)) {
+  start_idx <- (i * chunk_size) + 1
+  end_idx <- min((i + 1) * chunk_size, total_rows)
+
+
+  if (i > 0) {
+    edu_data[start_idx, 2:9] <- edu_data[1, 2:9]
+  }
+
+
+  df_chunk <- edu_data[start_idx:end_idx, ]
+
+
+  df_chunk <- row_to_names(df_chunk, row_number = 1)
+  file_name <- colnames(df_chunk)[1]
+
+
+  # clean filenames
+  file_name <- gsub("[^[:alnum:]_ ]", "", file_name)
+  file_name <- gsub(" ", "_", file_name)
+
+  # save
+  output_path <- file.path("data/processed-data", paste0(file_name, ".csv"))
+  write_csv(df_chunk, output_path)
+}
+```
